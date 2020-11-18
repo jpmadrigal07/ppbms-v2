@@ -6,15 +6,11 @@ import { Navbar, Nav, NavDropdown, Container } from "react-bootstrap";
 import { gSetCurrentPage } from "../../actions/navBarActions";
 import { I_NavbarTopProps, I_GlobalState } from "../../interfaces";
 import constant from "../../constant";
+import _ from "lodash";
 
 const NavbarTop = (props: I_NavbarTopProps) => {
-
-  const { gSetCurrentPage, gCurrentPage } = props
+  const { gSetCurrentPage, gCurrentPage, gAuthData, gAuthIsLoading } = props;
   const history = useHistory();
-
-  useEffect(() => {
-    gSetCurrentPage(constant.defaultNavBar);
-  }, []);
 
   useEffect(() => {
     let link = gCurrentPage;
@@ -23,22 +19,47 @@ const NavbarTop = (props: I_NavbarTopProps) => {
     history.push("/" + link);
   }, [gCurrentPage]);
 
-  const changePage = (page: String) => {
+  const changePage = (page: string) => {
     gSetCurrentPage(page);
   };
 
   const constructNavBar = () => {
-    return constant.navBarLinks.map((name, i) => {
-      return (
-        <Nav.Link
-          key={i}
-          onClick={() => changePage(name)}
-          className={gCurrentPage === name ? "active" : ""}
-        >
-          {name}
-        </Nav.Link>
-      );
-    });
+    if(gAuthData && gAuthData !== "" && !gAuthIsLoading && gCurrentPage !== "Login" && gCurrentPage !== "") { 
+      return constant.navBarLinks.map((name, i, arr) => {
+        if (arr.length - 1 === i) {
+          // last one
+          return (
+            <>
+              <Nav.Link
+                onClick={() => changePage(name)}
+                className={gCurrentPage === name ? "active" : ""}
+              >
+                {name}
+              </Nav.Link>
+              <NavDropdown title="Ariel" id="collasible-nav-dropdown">
+                <NavDropdown.Item href="#action/3.4">
+                  Account Settings
+                </NavDropdown.Item>
+                <NavDropdown.Item href="/api/logout">Log out</NavDropdown.Item>
+              </NavDropdown>
+            </>
+          );
+        } else {
+          // not last one
+          return (
+            <Nav.Link
+              key={i}
+              onClick={() => changePage(name)}
+              className={gCurrentPage === name ? "active" : ""}
+            >
+              {name}
+            </Nav.Link>
+          );
+        }
+      });
+    } else {
+      return null;
+    }
   };
 
   return (
@@ -49,12 +70,6 @@ const NavbarTop = (props: I_NavbarTopProps) => {
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="ml-auto">
             {constructNavBar()}
-            <NavDropdown title="Ariel" id="collasible-nav-dropdown">
-              <NavDropdown.Item href="#action/3.4">
-                Account Settings
-              </NavDropdown.Item>
-              <NavDropdown.Item href="#action/3.4">Log out</NavDropdown.Item>
-            </NavDropdown>
           </Nav>
         </Navbar.Collapse>
       </Container>
@@ -64,6 +79,8 @@ const NavbarTop = (props: I_NavbarTopProps) => {
 
 const mapStateToProps = (gState: I_GlobalState) => ({
   gCurrentPage: gState.navBar.currentPage,
+  gAuthIsLoading: gState.auth.isLoading,
+  gAuthData: gState.auth.user
 });
 
 export default connect(mapStateToProps, { gSetCurrentPage })(NavbarTop);
