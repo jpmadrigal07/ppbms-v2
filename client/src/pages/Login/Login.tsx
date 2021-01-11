@@ -38,7 +38,7 @@ const Login = (props: I_LoginProps) => {
         if(!gAuthData) {
           setShowAlert(true)
           setAlertHeading("Ooopss...")
-          setAlertMessage("This account doesn't exist in PPBMS database.")
+          setAlertMessage("This account doesn't exist in PPBMS database")
           setAlertType("warning")
           // return the user data value to null
           gFetchUser();
@@ -50,7 +50,7 @@ const Login = (props: I_LoginProps) => {
       } else {
         setShowAlert(true)
         setAlertHeading("Oh oh...")
-        setAlertMessage("Unkown error occured.")
+        setAlertMessage("Unkown error occured")
         setAlertType("danger")
         setisLoading(false);
         setIsLoggingIn(false);
@@ -69,7 +69,7 @@ const Login = (props: I_LoginProps) => {
     ) {
       setShowAlert(true)
       setAlertHeading("Ooopss...")
-      setAlertMessage("Please complete all the inputs.")
+      setAlertMessage("Please complete all the inputs")
       setAlertType("warning")
       setisLoading(false);
     } else {

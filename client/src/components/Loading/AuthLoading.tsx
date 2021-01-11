@@ -8,7 +8,7 @@ import _ from "lodash";
 
 const AuthLoading = (props: I_AuthLoadingProps) => {
   const { gSetCurrentPage, gAuthData, gFetchUser, gAuthIsLoading } = props;
-  const [authLoadingCountLoads, setAuthLoadingCountLoad] = useState(0);
+  const [authLoadingCountLoads, setAuthLoadingCountLoad] = useState(1);
 
   useEffect(() => {
     gFetchUser();
@@ -16,21 +16,15 @@ const AuthLoading = (props: I_AuthLoadingProps) => {
 
   useEffect(() => {
     // avoids flickering of login page if logged in
-    setAuthLoadingCountLoad(authLoadingCountLoads + 1);
-    if (authLoadingCountLoads > 0) {
-      if (
-        !_.isNil(gAuthData) &&
-        !_.isNil(gAuthData.role) &&
-        gAuthData.role === "Admin"
-      ) {
+    setAuthLoadingCountLoad(authLoadingCountLoads + 1)
+    if(authLoadingCountLoads === 2) {
+      if (!gAuthIsLoading && _.isNil(gAuthData.role)) {
+        gSetCurrentPage("Login");
+      } else if (!gAuthIsLoading && !_.isNil(gAuthData.role)) {
         gSetCurrentPage("Dashboard");
-      } else {
-        if(!gAuthIsLoading) {
-            gSetCurrentPage("Login");
-        }
       }
     }
-  }, [gAuthIsLoading]);
+  }, [gAuthData]);
 
   return (
     <Container>

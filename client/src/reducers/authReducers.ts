@@ -1,4 +1,4 @@
-import { USER_LOADING, USER_LOADED } from '../actions/types';
+import { AUTH_LOADING, AUTH_LOADED } from '../actions/types';
 import { I_ReduxAction } from "../interfaces";
 
 const initialState = {
@@ -8,12 +8,12 @@ const initialState = {
 
 export default function(state = initialState, action: I_ReduxAction) {
     switch (action.type) {
-        case USER_LOADING:
+        case AUTH_LOADING:
             return {
                 ...state,
                 isLoading: true
             };
-        case USER_LOADED:
+        case AUTH_LOADED:
             return {
                 isLoading: false,
                 user: action.payload

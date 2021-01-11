@@ -7,11 +7,13 @@ import Report from "./pages/Report/Report";
 import DispatchControl from "./pages/DispatchControl/DispatchControl";
 import MasterList from "./pages/MasterList/MasterList";
 import Login from "./pages/Login/Login";
+import Settings from "./pages/Settings/Settings";
 import constant from "./constant";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.scss";
 import NavbarTop from "./components/Navbar/NavbarTop";
-import AuthLoading from "./components/AuthLoading/AuthLoading";
+import TopAlert from "./components/Alert/TopAlert";
+import AuthLoading from "./components/Loading/AuthLoading";
 import { I_GlobalState, I_AppProps } from "./interfaces";
 import _ from "lodash";
 
@@ -68,12 +70,19 @@ const App = (props: I_AppProps) => {
               return <Report />;
             }}
           />
+          <Route
+            path="/settings"
+            render={() => {
+              return <Settings />;
+            }}
+          />
         </>
       );
   };
   return (
     <Router>
       <NavbarTop />
+      <TopAlert />
       {renderRoutes()}
     </Router>
   );

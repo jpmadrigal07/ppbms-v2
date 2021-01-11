@@ -6,11 +6,23 @@ const User = require("../models/user");
 // @desc    Get All User
 // @access  Public
 router.get("/", async (req, res) => {
+  const condition = !_.isNil(req.query.condition) ? JSON.parse(req.query.condition) : {};
+  if (_.isNil(condition.deletedAt)) {
+      condition.isBlocked = {
+          $exists: false
+      }
+  }
   try {
-    const getUsers = await User.find();
-    res.json(getUsers);
-  } catch (error) {
-    res.status(501).json({ Error: error });
+    const getAllUser = await User.find(condition);
+    res.json({
+      dbRes: getAllUser,
+      isSuccess: true
+    });
+  } catch (err) {
+    res.json({
+      dbRes: err,
+      isSuccess: false
+    });
   }
 });
 
@@ -19,10 +31,21 @@ router.get("/", async (req, res) => {
 // @access  Public
 router.get("/:id", async (req, res) => {
   try {
-    const getUser = await User.findById({ _id: req.params.id });
-    res.json(getUser);
-  } catch (error) {
-    res.status(501).json({ Error: error });
+    const getUser = await User.findById({
+      _id: req.params.id,
+      isBlocked: {
+          $exists: false
+      }
+    });
+    res.json({
+      dbRes: getUser,
+      isSuccess: true
+    });
+  } catch (err) {
+    res.json({
+      dbRes: err,
+      isSuccess: false
+    });
   }
 });
 
@@ -34,9 +57,6 @@ router.post("/", async (req, res) => {
   const password = req.body.password;
   const firstName = req.body.firstName;
   const lastName = req.body.lastName;
-  const email = req.body.email;
-  const gender = req.body.gender;
-  const profilePicture = req.body.profilePicture;
   const role = req.body.role;
   const updatedAt = Date.now();
   const createdAt = Date.now();
@@ -46,9 +66,6 @@ router.post("/", async (req, res) => {
     password,
     firstName,
     lastName,
-    email,
-    gender,
-    profilePicture,
     role,
     updatedAt,
     createdAt,
@@ -73,9 +90,6 @@ router.put("/:id", async (req, res) => {
         password: req.body.password,
         firstName: req.body.firstName,
         lastName: req.body.lastName,
-        email: req.body.email,
-        gender: req.body.gender,
-        profilePicture: req.body.profilePicture,
         role: req.body.role,
         isBlocked: req.body.isBlocked,
         updatedAt: Date.now(),
@@ -93,25 +107,28 @@ router.put("/:id", async (req, res) => {
 // @access  Private
 router.patch("/:id", async (req, res) => {
   let forUpdate = {};
-  if (req.body.gender) forUpdate.gender = req.body.gender;
   if (req.body.role) forUpdate.role = req.body.role;
   if (req.body.isBlocked) forUpdate.isBlocked = req.body.isBlocked;
   if (req.body.username) forUpdate.username = req.body.username;
   if (req.body.password) forUpdate.password = req.body.password;
   if (req.body.firstName) forUpdate.firstName = req.body.firstName;
   if (req.body.lastName) forUpdate.lastName = req.body.lastName;
-  if (req.body.email) forUpdate.email = req.body.email;
-  if (req.body.profilePicture)
-    forUpdate.profilePicture = req.body.profilePicture;
   try {
     const updateUser = await User.findByIdAndUpdate(req.params.id, {
       $set: forUpdate,
       updatedAt: Date.now(),
+    }, {
+      new: true
     });
-    if (updateUser) res.status(201).json("User updated.");
-    else res.status(400).json("Error found.");
-  } catch (error) {
-    res.status(501).json({ Error: error });
+    res.json({
+      dbRes: updateUser,
+      isSuccess: true
+    });
+  } catch (err) {
+    res.json({
+      dbRes: err,
+      isSuccess: false
+  });
   }
 });
 

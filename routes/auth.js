@@ -25,7 +25,10 @@ router.get("/api/logout", (req, res) => {
 });
 
 router.get("/api/current_user", (req, res) => {
-  res.send(req.user);
+  const user = _.isNil(req.user)
+    ? undefined
+    : { _id: req.user._id, role: req.user.role };
+  res.send(user);
 });
 
 module.exports = router;

@@ -5,11 +5,12 @@ import "./Navbar.scss";
 import { Navbar, Nav, NavDropdown, Container } from "react-bootstrap";
 import { gSetCurrentPage } from "../../actions/navBarActions";
 import { I_NavbarTopProps, I_GlobalState } from "../../interfaces";
+import { triggerTopAlert } from "../../actions/topAlertActions";
 import constant from "../../constant";
 import _ from "lodash";
 
 const NavbarTop = (props: I_NavbarTopProps) => {
-  const { gSetCurrentPage, gCurrentPage, gAuthData, gAuthIsLoading } = props;
+  const { gSetCurrentPage, gCurrentPage, gAuthData, gAuthIsLoading, triggerTopAlert, isTopAlertVisible } = props;
   const history = useHistory();
 
   useEffect(() => {
@@ -20,6 +21,9 @@ const NavbarTop = (props: I_NavbarTopProps) => {
   }, [gCurrentPage]);
 
   const changePage = (page: string) => {
+    if(isTopAlertVisible) {
+      triggerTopAlert(false, "", "")
+    }
     gSetCurrentPage(page);
   };
 
@@ -36,10 +40,7 @@ const NavbarTop = (props: I_NavbarTopProps) => {
               >
                 {name}
               </Nav.Link>
-              <NavDropdown title="Ariel" id="collasible-nav-dropdown">
-                <NavDropdown.Item href="#action/3.4">
-                  Account Settings
-                </NavDropdown.Item>
+              <NavDropdown title="Admin" id="collasible-nav-dropdown">
                 <NavDropdown.Item href="/api/logout">Log out</NavDropdown.Item>
               </NavDropdown>
             </>
@@ -63,7 +64,7 @@ const NavbarTop = (props: I_NavbarTopProps) => {
   };
 
   return (
-    <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
+    <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark" style={{marginBottom: '35px'}}>
       <Container>
         <Navbar.Brand href="#home">{constant.pageTitle}</Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
@@ -80,7 +81,8 @@ const NavbarTop = (props: I_NavbarTopProps) => {
 const mapStateToProps = (gState: I_GlobalState) => ({
   gCurrentPage: gState.navBar.currentPage,
   gAuthIsLoading: gState.auth.isLoading,
-  gAuthData: gState.auth.user
+  gAuthData: gState.auth.user,
+  isTopAlertVisible: gState.topAlert.showAlert
 });
 
-export default connect(mapStateToProps, { gSetCurrentPage })(NavbarTop);
+export default connect(mapStateToProps, { gSetCurrentPage, triggerTopAlert })(NavbarTop);

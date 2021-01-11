@@ -6,11 +6,14 @@ const cookieSession = require("cookie-session");
 const passport = require("passport");
 const keys = require("./config/keys");
 const UserRoute = require("./routes/user");
-const AnnouncementRoute =require("./routes/announcement");
-const PaymentRoute = require("./routes/payment");
-const ContactMessageRoute =require("./routes/contactMessage");
-const ReferralRoute =require("./routes/referral");
 const AuthRoute = require('./routes/auth');
+const AreaPriceRoute = require("./routes/areaPrice");
+const BarcodeMiddleTextRoute = require("./routes/barcodeMiddleText");
+const DispatchControlDataRoute = require("./routes/dispatchControlData");
+const DispatchControlMessengerRoute = require("./routes/dispatchControlMessenger");
+const EncodeListRoute = require("./routes/encodeList");
+const RecordRoute = require("./routes/record");
+const fileUpload = require('express-fileupload');
 require("./services/passport");
 
 const app = express();
@@ -37,14 +40,17 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(fileUpload());
 
 // Use Routes
 app.use('/', AuthRoute);
 app.use("/api/user", UserRoute);
-app.use("/api/announcement",AnnouncementRoute);
-app.use("/api/payment", PaymentRoute);
-app.use("/api/messages", ContactMessageRoute);
-app.use("/api/referral", ReferralRoute);
+app.use("/api/areaPrice", AreaPriceRoute);
+app.use("/api/barcodeMiddleText", BarcodeMiddleTextRoute);
+app.use("/api/dispatchControlData", DispatchControlDataRoute);
+app.use("/api/dispatchControlMessenger", DispatchControlMessengerRoute);
+app.use("/api/encodeList", EncodeListRoute);
+app.use("/api/record", RecordRoute);
 
 // Serve static assets if in production
 if (process.env.NODE_ENV === "production") {
