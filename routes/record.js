@@ -13,7 +13,8 @@ const {
 } = require("../services/constant")
 const {
     isSheetMasterList
-} = require("../services/record")
+} = require("../services/record");
+const { lookup } = require("dns");
 
 
 // @route   GET api/record
@@ -180,6 +181,143 @@ router.post("/", async (req, res) => {
 // @desc    Upload File And Save Records
 // @access  Private
 router.post('/upload', async (req, res) => {
+
+    if (!req.files || Object.keys(req.files).length === 0) {
+        res.json({
+            dbRes: "No file found",
+            isSuccess: false
+        });
+        return;
+    }
+
+    const { name, mv } = req.files.file;
+    const barcodeMiddleText = req.body.sheetNumber;
+    const fileExt = path.extname(name);
+    const allowedExt = [".xlsx", ".xls"]
+    
+    if (!allowedExt.includes(fileExt)) {
+        res.json({
+            dbRes: "This uploader only accept excel file",
+            isSuccess: false
+        });
+        return;
+    }
+
+    const uploadPath = path.join(__dirname, `../uploads/${name}`);
+    mv(uploadPath, async (err) => {
+        if (err) {
+            res.json({
+                dbRes: err.message,
+                isSuccess: false
+            });
+            return;
+        }
+        // insert encode list
+        if (!_.isNil(name)) {
+            const newEncodeList = new EncodeList({
+                fileName: name
+            });
+    
+            try {
+                const getEncodeList = await EncodeList.find({
+                    fileName: name,
+                    deletedAt: {
+                      $exists: false
+                    }
+                });
+                if (getEncodeList.length === 0) {
+                    const createEncodeList = await newEncodeList.save();
+                    const workbook = await extractExcelFile(uploadPath)
+                    const worksheet = workbook.worksheets[sheetNumber]
+                    if(!_.isNil(worksheet)) {
+                        let toUploadFileHeaders = null;
+                        let excelRecords = [];
+                        const currentYear = moment().year();
+                        // Iterate over all rows (including empty rows) in a worksheet
+                        worksheet.eachRow({ includeEmpty: true }, function(row, rowNumber) {
+                            if(rowNumber === 1) {
+                                toUploadFileHeaders = row.values
+                            } else if(rowNumber > 1) {
+                                excelRecords.push({
+                                    encodeListId: createEncodeList._id,
+                                    sender: row.values[2],
+                                    delType: row.values[3],
+                                    pud: row.values[4],
+                                    month: row.values[5],
+                                    year: currentYear,
+                                    jobNum: row.values[6],
+                                    checkList: row.values[7],
+                                    fileName: row.values[8],
+                                    seqNum: parseInt(row.values[9]),
+                                    cycleCode: row.values[10],
+                                    qty: parseInt(row.values[11]),
+                                    address: row.values[12],
+                                    area: row.values[13],
+                                    subsName: row.values[14],
+                                    barCode: row.values[15],
+                                    acctNum: row.values[16],
+                                    dateRecieved: row.values[17],
+                                    recievedBy: row.values[17],
+                                    relation: row.values[18],
+                                    messenger: row.values[19],
+                                    status: row.values[20],
+                                    reasonRTS: row.values[21],
+                                    remarks: row.values[22],
+                                    dateReported: row.values[23]
+                                })
+                            }
+                        });
+                        const masterListSheet = isSheetMasterList(toUploadFileHeaders, masterListValidHeaderNames);
+                        if(excelRecords.length > 0 && masterListSheet) {
+                            try {
+                                const insertResult = await Record.insertMany(excelRecords);
+                                res.json({
+                                    dbRes: insertResult,
+                                    isSuccess: true
+                                });
+                            } catch (error) {
+                                res.json({
+                                    dbRes: error.message,
+                                    isSuccess: true
+                                });
+                            }
+                        } else if(excelRecords.length === 0 && masterListSheet) {
+                            res.json({
+                                dbRes: "Excel sheet is empty",
+                                isSuccess: false
+                            });
+                        } else {
+                            res.json({
+                                dbRes: "Invalid excel sheet",
+                                isSuccess: false
+                            });
+                        }
+                    } else {
+                        res.json({
+                            dbRes: "Excel sheet doesn't exist",
+                            isSuccess: false
+                        });
+                    }
+                } else {
+                    res.json({
+                        dbRes: "File name already exist. Maybe this file is already uploaded.",
+                        isSuccess: false
+                    });
+                }
+            } catch (err) {
+                res.json({
+                    dbRes: err,
+                    isSuccess: false
+                });
+            }
+        }
+    });
+});
+
+// @route   PATCH api/record/upload
+// @desc    Upload File And Save Records
+// @access  Private
+router.patch('/upload', async (req, res) => {
 
     if (!req.files || Object.keys(req.files).length === 0) {
         res.json({

@@ -33,7 +33,11 @@ const Import = (props: I_ImportProps) => {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    uploadExcelFile(file, sheetNumber);
+    if (useBy === "masterlists") {
+      uploadExcelFile(file, barcodeMiddleText);
+    } else if (useBy === "encodemasterlists") {
+
+    }
   };
 
   const inputRender = () => {

@@ -21,10 +21,10 @@ export const getRecord = () => (dispatch: Function) => {
     });
 };
 
-export const uploadExcelFile = (file: string, sheetNumber: string) => (dispatch: Function) => {
+export const uploadExcelFile = (file: string, barcodeMiddleText: string) => (dispatch: Function) => {
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('sheetNumber', sheetNumber);
+  formData.append('barcodeMiddleText', barcodeMiddleText);
   const config = {
     headers: {
         'content-type': 'multipart/form-data'
@@ -33,6 +33,45 @@ export const uploadExcelFile = (file: string, sheetNumber: string) => (dispatch:
   dispatch(setRecordLoader("add", true));
   axios
     .post(`/api/record/upload`, formData, config)
+    .then((res) => {
+        if(res.data.isSuccess) {
+          dispatch({
+            type: ADD_RECORD,
+            payload: res.data.dbRes
+          });
+          dispatch({
+            type: TOP_ALERT,
+            payload: { showAlert: true, message: "Successfully uploaded", type: "success" }
+          });
+        } else {
+          dispatch({
+            type: TOP_ALERT,
+            payload: { showAlert: true, message: res.data.dbRes, type: "danger" }
+          });
+          dispatch(setRecordLoader("add", false));
+        }
+      }
+    )
+    .catch((err) => {
+      dispatch({
+        type: TOP_ALERT,
+        payload: { showAlert: true, message: err, type: "danger" }
+      });
+    });
+};
+
+export const updateExcelFile = (file: string, sheetNumber: string) => (dispatch: Function) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('sheetNumber', sheetNumber);
+  const config = {
+    headers: {
+        'content-type': 'multipart/form-data'
+    }
+  }
+  dispatch(setRecordLoader("update", true));
+  axios
+    .patch(`/api/record/upload`, formData, config)
     .then((res) => {
         if(res.data.isSuccess) {
           dispatch({
