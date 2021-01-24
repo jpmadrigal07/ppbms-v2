@@ -27,11 +27,26 @@ const record = new Schema({
     subsName: String,
     barCode: String,
     acctNum: String,
-    dateRecieved: Date,
-    recievedBy: String,
-    relation: String,
-    messenger: String,
-    status: String,
+    dateRecieved: { 
+        type: String,
+        default: null
+    },
+    recievedBy: { 
+        type: String,
+        default: null
+    },
+    relation: { 
+        type: String,
+        default: null
+    },
+    messenger: { 
+        type: String,
+        default: null
+    },
+    status: { 
+        type: String,
+        default: null
+    },
     reasonRTS: { 
         type: String,
         default: null

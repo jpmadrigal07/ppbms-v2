@@ -100,8 +100,9 @@ export interface I_DispatchControlMessenger {
 
 export interface I_EncodeList {
     _id: string,
-    filaName: string,
-    deletedAt: string
+    fileName: string,
+    deletedAt: string,
+    createdAt: sting
 }
 
 export interface I_Record {
@@ -248,10 +249,18 @@ export interface I_DeleteBarcodeMiddleTextModal {
 
 export interface I_ImportProps {
     uploadExcelFile: Function,
+    updateExcelFile: Function,
     getBarcodeMiddleText: Function,
     isRecordAddLoading: boolean,
+    isRecordUpdateLoading: boolean,
     recordData: I_Record[],
     useBy: string,
     barcodeMiddleTextData: I_BarcodeMiddleText[]
+}
+
+export interface I_MasterListViewProps {
+    recordData: I_Record[],
+    encodeListData: I_EncodeList[],
+    isEncodeListLoading: boolean
 }
 

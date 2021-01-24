@@ -13,7 +13,7 @@ const {
 } = require("../services/constant")
 const {
     isSheetMasterList
-} = require("../services/record");
+} = require("../services/recordHelper");
 const { lookup } = require("dns");
 
 
@@ -191,7 +191,7 @@ router.post('/upload', async (req, res) => {
     }
 
     const { name, mv } = req.files.file;
-    const barcodeMiddleText = req.body.sheetNumber;
+    const barcodeMiddleText = req.body.barcodeMiddleText;
     const fileExt = path.extname(name);
     const allowedExt = [".xlsx", ".xls"]
     
@@ -228,49 +228,44 @@ router.post('/upload', async (req, res) => {
                 if (getEncodeList.length === 0) {
                     const createEncodeList = await newEncodeList.save();
                     const workbook = await extractExcelFile(uploadPath)
-                    const worksheet = workbook.worksheets[sheetNumber]
+                    const worksheet = workbook.worksheets[0]
                     if(!_.isNil(worksheet)) {
-                        let toUploadFileHeaders = null;
-                        let excelRecords = [];
+                        const recordCount = await Record.countDocuments();
+                        let recordLastCount = recordCount;
                         const currentYear = moment().year();
-                        // Iterate over all rows (including empty rows) in a worksheet
-                        worksheet.eachRow({ includeEmpty: true }, function(row, rowNumber) {
-                            if(rowNumber === 1) {
-                                toUploadFileHeaders = row.values
-                            } else if(rowNumber > 1) {
-                                excelRecords.push({
-                                    encodeListId: createEncodeList._id,
-                                    sender: row.values[2],
-                                    delType: row.values[3],
-                                    pud: row.values[4],
-                                    month: row.values[5],
-                                    year: currentYear,
-                                    jobNum: row.values[6],
-                                    checkList: row.values[7],
-                                    fileName: row.values[8],
-                                    seqNum: parseInt(row.values[9]),
-                                    cycleCode: row.values[10],
-                                    qty: parseInt(row.values[11]),
-                                    address: row.values[12],
-                                    area: row.values[13],
-                                    subsName: row.values[14],
-                                    barCode: row.values[15],
-                                    acctNum: row.values[16],
-                                    dateRecieved: row.values[17],
-                                    recievedBy: row.values[17],
-                                    relation: row.values[18],
-                                    messenger: row.values[19],
-                                    status: row.values[20],
-                                    reasonRTS: row.values[21],
-                                    remarks: row.values[22],
-                                    dateReported: row.values[23]
-                                })
-                            }
-                        });
+                        const rows = worksheet._rows;
+                        const toUploadFileHeaders = worksheet.getRow(1).values;
                         const masterListSheet = isSheetMasterList(toUploadFileHeaders, masterListValidHeaderNames);
-                        if(excelRecords.length > 0 && masterListSheet) {
+                        // Iterate over all rows (including empty rows) in a worksheet
+                        const restructuredRows = rows.map((res, i) => {
+                            if(i > 1) {
+                                recordLastCount++;
+                                const values = worksheet.getRow(i).values;
+                                const barCode = `${values[10]}${barcodeMiddleText}${recordLastCount}`
+                                return {
+                                    encodeListId: createEncodeList._id,
+                                    sender: values[2],
+                                    delType: values[3],
+                                    pud: values[4],
+                                    month: values[5],
+                                    year: currentYear,
+                                    jobNum: values[6],
+                                    checkList: values[7],
+                                    fileName: values[8],
+                                    seqNum: parseInt(values[9]),
+                                    cycleCode: values[10],
+                                    qty: parseInt(values[11]),
+                                    address: values[12],
+                                    area: values[13],
+                                    subsName: values[14],
+                                    barCode: barCode,
+                                    acctNum: values[16]
+                                }
+                            }
+                        }).filter((res) => !_.isNil(res))
+                        if(restructuredRows.length > 0 && masterListSheet) {
                             try {
-                                const insertResult = await Record.insertMany(excelRecords);
+                                const insertResult = await Record.insertMany(restructuredRows);
                                 res.json({
                                     dbRes: insertResult,
                                     isSuccess: true
@@ -317,7 +312,7 @@ router.post('/upload', async (req, res) => {
 // @route   PATCH api/record/upload
 // @desc    Upload File And Save Records
 // @access  Private
-router.patch('/upload', async (req, res) => {
+router.patch('/update', async (req, res) => {
 
     if (!req.files || Object.keys(req.files).length === 0) {
         res.json({
@@ -327,14 +322,17 @@ router.patch('/upload', async (req, res) => {
         return;
     }
 
-    const { name, mv } = req.files.file;
+    const {
+        name,
+        mv
+    } = req.files.file;
     const originalSheetNumber = req.body.sheetNumber;
     // Needed to subtract 1 because sheet number starts with 0
     // but user input starts at 1
-    const sheetNumber = originalSheetNumber-1;
+    const sheetNumber = originalSheetNumber - 1;
     const fileExt = path.extname(name);
     const allowedExt = [".xlsx", ".xls"]
-    
+
     if (!allowedExt.includes(fileExt)) {
         res.json({
             dbRes: "This uploader only accept excel file",
@@ -354,93 +352,79 @@ router.patch('/upload', async (req, res) => {
         }
         // insert encode list
         if (!_.isNil(name)) {
-            const newEncodeList = new EncodeList({
-                fileName: name
-            });
-    
             try {
-                const getEncodeList = await EncodeList.find({
-                    fileName: name,
-                    deletedAt: {
-                      $exists: false
-                    }
-                });
-                if (getEncodeList.length === 0) {
-                    const createEncodeList = await newEncodeList.save();
-                    const workbook = await extractExcelFile(uploadPath)
-                    const worksheet = workbook.worksheets[sheetNumber]
-                    if(!_.isNil(worksheet)) {
-                        let toUploadFileHeaders = null;
-                        let excelRecords = [];
-                        const currentYear = moment().year();
-                        // Iterate over all rows (including empty rows) in a worksheet
-                        worksheet.eachRow({ includeEmpty: true }, function(row, rowNumber) {
-                            if(rowNumber === 1) {
-                                toUploadFileHeaders = row.values
-                            } else if(rowNumber > 1) {
-                                excelRecords.push({
-                                    encodeListId: createEncodeList._id,
-                                    sender: row.values[2],
-                                    delType: row.values[3],
-                                    pud: row.values[4],
-                                    month: row.values[5],
-                                    year: currentYear,
-                                    jobNum: row.values[6],
-                                    checkList: row.values[7],
-                                    fileName: row.values[8],
-                                    seqNum: parseInt(row.values[9]),
-                                    cycleCode: row.values[10],
-                                    qty: parseInt(row.values[11]),
-                                    address: row.values[12],
-                                    area: row.values[13],
-                                    subsName: row.values[14],
-                                    barCode: row.values[15],
-                                    acctNum: row.values[16],
-                                    dateRecieved: row.values[17],
-                                    recievedBy: row.values[17],
-                                    relation: row.values[18],
-                                    messenger: row.values[19],
-                                    status: row.values[20],
-                                    reasonRTS: row.values[21],
-                                    remarks: row.values[22],
-                                    dateReported: row.values[23]
-                                })
+                const workbook = await extractExcelFile(uploadPath)
+                const worksheet = workbook.worksheets[sheetNumber]
+                if (!_.isNil(worksheet)) {
+                    // Iterate over all rows (including empty rows) in a worksheet
+                    const rows = worksheet._rows;
+                    const toUploadFileHeaders = worksheet.getRow(1).values;
+                    const isExcelRecordsEmpty = rows.length === 0 ? true : false;
+                    const masterListSheet = isSheetMasterList(toUploadFileHeaders, masterListValidHeaderNames);
+                    const restructuredRows = rows.map((res, i) => {
+                        if(i > 1) {
+                            const values = worksheet.getRow(i).values;
+                            const barCode = values[15]
+                            const dateRecieved = !_.isNil(values[17]) ? moment(new Date(values[17])).format() : undefined
+                            const recievedBy = values[18]
+                            const relation = values[19]
+                            const messenger = values[20]
+                            const status = values[21]
+                            const reasonRTS = values[22]
+                            const remarks = values[23]
+                            const dateReported = !_.isNil(values[24]) ? moment(new Date(values[24])).format() : undefined
+                            const bulk = {
+                                updateOne:
+                                {
+                                    "filter": { barCode },
+                                    "update": { $set: {
+                                        dateRecieved,
+                                        recievedBy,
+                                        relation,
+                                        messenger,
+                                        status,
+                                        reasonRTS,
+                                        remarks,
+                                        dateReported
+                                    }}
+                                }
                             }
-                        });
-                        const masterListSheet = isSheetMasterList(toUploadFileHeaders, masterListValidHeaderNames);
-                        if(excelRecords.length > 0 && masterListSheet) {
-                            try {
-                                const insertResult = await Record.insertMany(excelRecords);
-                                res.json({
-                                    dbRes: insertResult,
-                                    isSuccess: true
-                                });
-                            } catch (error) {
-                                res.json({
-                                    dbRes: error.message,
-                                    isSuccess: true
-                                });
+                            if(!_.isNil(dateRecieved) || !_.isNil(recievedBy) || !_.isNil(relation) || !_.isNil(messenger) || !_.isNil(status) || !_.isNil(reasonRTS) || !_.isNil(remarks) || !_.isNil(dateReported)) {
+                                return bulk
                             }
-                        } else if(excelRecords.length === 0 && masterListSheet) {
+                        }
+                    }).filter((res) => !_.isNil(res))
+                    const updatedRecordBarcode = restructuredRows.map((res) => {
+                        return res.updateOne.filter.barCode
+                    }).filter((res) => !_.isNil(res))
+                    if (!isExcelRecordsEmpty && masterListSheet) {
+                        if(restructuredRows.length > 0) {
+                            await Record.bulkWrite(restructuredRows)
+                            const updatedRecord = await Record.find({barCode: {$in: updatedRecordBarcode}}).exec()
                             res.json({
-                                dbRes: "Excel sheet is empty",
-                                isSuccess: false
+                                dbRes: updatedRecord,
+                                isSuccess: true
                             });
                         } else {
                             res.json({
-                                dbRes: "Invalid excel sheet",
+                                dbRes: "No data to encode",
                                 isSuccess: false
                             });
                         }
+                    } else if (isExcelRecordsEmpty && !masterListSheet) {
+                        res.json({
+                            dbRes: "Excel sheet is empty",
+                            isSuccess: false
+                        });
                     } else {
                         res.json({
-                            dbRes: "Excel sheet doesn't exist",
+                            dbRes: "Invalid excel sheet",
                             isSuccess: false
                         });
                     }
                 } else {
                     res.json({
-                        dbRes: "File name already exist. Maybe this file is already uploaded.",
+                        dbRes: "Excel sheet doesn't exist",
                         isSuccess: false
                     });
                 }

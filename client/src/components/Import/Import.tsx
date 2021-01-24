@@ -2,14 +2,21 @@ import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Form, Row, Col, Button, Spinner } from "react-bootstrap";
 import { I_ImportProps, I_GlobalState } from "../../interfaces";
-import { uploadExcelFile } from "../../actions/recordActions";
-import {
-  getBarcodeMiddleText
-} from "../../actions/barcodeMiddleTextActions";
+import { uploadExcelFile, updateExcelFile } from "../../actions/recordActions";
+import { getBarcodeMiddleText } from "../../actions/barcodeMiddleTextActions";
 import _ from "lodash";
 
 const Import = (props: I_ImportProps) => {
-  const { useBy, getBarcodeMiddleText, uploadExcelFile, isRecordAddLoading, barcodeMiddleTextData, recordData } = props;
+  const {
+    useBy,
+    getBarcodeMiddleText,
+    uploadExcelFile,
+    updateExcelFile,
+    isRecordAddLoading,
+    isRecordUpdateLoading,
+    barcodeMiddleTextData,
+    recordData,
+  } = props;
   const [file, setFile] = useState("");
   const [sheetNumber, setSheetNumber] = useState("");
   const [barcodeMiddleText, setBarcodeMiddleText] = useState("");
@@ -24,6 +31,7 @@ const Import = (props: I_ImportProps) => {
   useEffect(() => {
     setKeyNumber(Math.random());
     setSheetNumber("");
+    setBarcodeMiddleText("");
   }, [recordData]);
 
   const handleChange = async (e: any) => {
@@ -36,7 +44,7 @@ const Import = (props: I_ImportProps) => {
     if (useBy === "masterlists") {
       uploadExcelFile(file, barcodeMiddleText);
     } else if (useBy === "encodemasterlists") {
-
+      updateExcelFile(file, sheetNumber);
     }
   };
 
@@ -45,10 +53,15 @@ const Import = (props: I_ImportProps) => {
       return (
         <Form.Group controlId="exampleForm.ControlSelect1">
           <Form.Label>Barcode Middle Text</Form.Label>
-          <Form.Control as="select" onChange={(e) => setBarcodeMiddleText(e.target.value)}>
+          <Form.Control
+            as="select"
+            disabled={isRecordAddLoading}
+            value={barcodeMiddleText}
+            onChange={(e) => setBarcodeMiddleText(e.target.value)}
+          >
             <option></option>
             {barcodeMiddleTextData.map((res) => {
-              return <option>{res.code}</option>
+              return <option>{res.code}</option>;
             })}
           </Form.Control>
         </Form.Group>
@@ -61,7 +74,7 @@ const Import = (props: I_ImportProps) => {
             type="number"
             name="sheetNumber"
             value={sheetNumber}
-            disabled={isRecordAddLoading}
+            disabled={isRecordUpdateLoading}
             onChange={(e) => setSheetNumber(e.target.value)}
           />
         </Form.Group>
@@ -82,12 +95,12 @@ const Import = (props: I_ImportProps) => {
                 label="File"
                 onChange={handleChange}
                 key={keyNumber}
-                disabled={isRecordAddLoading}
+                disabled={isRecordAddLoading || isRecordUpdateLoading}
               />
             </Form.Group>
             {inputRender()}
             <Button variant="primary" type="submit">
-              {isRecordAddLoading ? (
+              {isRecordAddLoading || isRecordUpdateLoading ? (
                 <Spinner animation="grow" variant="light" size="sm" />
               ) : (
                 "Upload"
@@ -104,11 +117,13 @@ const Import = (props: I_ImportProps) => {
 
 const mapStateToProps = (gState: I_GlobalState) => ({
   isRecordAddLoading: gState.record.isAddLoading,
+  isRecordUpdateLoading: gState.record.isUpdateLoading,
   recordData: gState.record.data,
-  barcodeMiddleTextData: gState.barcodeMiddleText.data
+  barcodeMiddleTextData: gState.barcodeMiddleText.data,
 });
 
 export default connect(mapStateToProps, {
   getBarcodeMiddleText,
   uploadExcelFile,
+  updateExcelFile,
 })(Import);

@@ -1,5 +1,5 @@
 import { UPDATE_RECORD, GET_RECORD, RECORD_LOADER, ADD_RECORD } from "../actions/types";
-import { I_ReduxAction } from "../interfaces";
+import { I_ReduxAction, I_Record } from "../interfaces";
 import _ from "lodash";
 
 const initialState = {
@@ -17,7 +17,11 @@ export default function (state = initialState, action: I_ReduxAction) {
     case UPDATE_RECORD:
       return {
         ...state,
-        isUpdateLoading: false
+        isUpdateLoading: false,
+        data: state.data.map((data: I_Record) => {
+          const updatedRecord = payload.find((updated: I_Record) => updated._id === data._id);
+          return !_.isNil(updatedRecord) ? updatedRecord : data;
+        })
       };
     case RECORD_LOADER:
       return {

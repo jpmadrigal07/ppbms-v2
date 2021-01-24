@@ -1,4 +1,5 @@
 const _ = require("lodash");
+const Record = require("../models/record");
 
 const isSheetMasterList = (
   toUploadFileHeaders,
@@ -22,4 +23,19 @@ const isSheetMasterList = (
   );
 };
 
-module.exports = { isSheetMasterList };
+const updateRecordForLoop = async (
+  condition,
+  data
+) => {
+  try {
+    await Record.updateOne(condition, { $set: data});
+    return true
+  } catch (error) {
+    return false
+  }
+};
+
+module.exports = {
+  isSheetMasterList,
+  updateRecordForLoop
+};
