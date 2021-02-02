@@ -52,11 +52,11 @@ export default function (state = initialState, action: I_ReduxAction) {
         isLoading:
           payload.type === "list" ? payload.isLoading : state.isLoading,
         isUpdateLoading:
-          payload.type === "update" ? payload.isLoading : state.isLoading,
+          payload.type === "update" ? payload.isLoading : state.isUpdateLoading,
         isAddLoading:
-          payload.type === "add" ? payload.isLoading : state.isLoading,
+          payload.type === "add" ? payload.isLoading : state.isAddLoading,
         isDeleteLoading:
-          payload.type === "delete" ? payload.isLoading : state.isLoading,
+          payload.type === "delete" ? payload.isLoading : state.isDeleteLoading,
       };
     default:
       return state;

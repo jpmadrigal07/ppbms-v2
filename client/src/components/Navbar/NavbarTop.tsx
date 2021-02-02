@@ -6,7 +6,7 @@ import { Navbar, Nav, NavDropdown, Container } from "react-bootstrap";
 import { gSetCurrentPage } from "../../actions/navBarActions";
 import { I_NavbarTopProps, I_GlobalState } from "../../interfaces";
 import { triggerTopAlert } from "../../actions/topAlertActions";
-import constant from "../../constant";
+import { pageTitle, navBarLinks } from "../../constant";
 import _ from "lodash";
 
 const NavbarTop = (props: I_NavbarTopProps) => {
@@ -29,7 +29,7 @@ const NavbarTop = (props: I_NavbarTopProps) => {
 
   const constructNavBar = () => {
     if(gAuthData && gAuthData !== "" && !gAuthIsLoading && gCurrentPage !== "Login" && gCurrentPage !== "") { 
-      return constant.navBarLinks.map((name, i, arr) => {
+      return navBarLinks.map((name, i, arr) => {
         if (arr.length - 1 === i) {
           // last one
           return (
@@ -66,7 +66,7 @@ const NavbarTop = (props: I_NavbarTopProps) => {
   return (
     <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark" style={{marginBottom: '35px'}}>
       <Container>
-        <Navbar.Brand href="#home">{constant.pageTitle}</Navbar.Brand>
+        <Navbar.Brand href="#home">{pageTitle}</Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="ml-auto">

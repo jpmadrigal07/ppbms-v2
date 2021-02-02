@@ -1,0 +1,7 @@
+.BasicLink {
+    cursor: pointer;
+    color: blue;
+    &:hover {
+        text-decoration: underline;
+    }
+}

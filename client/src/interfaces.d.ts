@@ -117,7 +117,7 @@ export interface I_Record {
     jobNum: string,
     checkList: string,
     fileName: string,
-    seqNum: string,
+    seqNum: number,
     cycleCode: string,
     qty: number,
     address: string,
@@ -262,5 +262,12 @@ export interface I_MasterListViewProps {
     recordData: I_Record[],
     encodeListData: I_EncodeList[],
     isEncodeListLoading: boolean
+}
+
+export interface I_RecordModal {
+    selectedRecordData: I_Record[],
+    isRecordModalOpen: boolean,
+    modalTitle: string,
+    setIsRecordModalOpen: Function
 }
 

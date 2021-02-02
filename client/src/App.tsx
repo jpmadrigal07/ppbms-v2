@@ -8,7 +8,7 @@ import DispatchControl from "./pages/DispatchControl/DispatchControl";
 import MasterList from "./pages/MasterList/MasterList";
 import Login from "./pages/Login/Login";
 import Settings from "./pages/Settings/Settings";
-import constant from "./constant";
+import { pageTitle } from "./constant";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.scss";
 import NavbarTop from "./components/Navbar/NavbarTop";
@@ -21,7 +21,7 @@ const App = (props: I_AppProps) => {
   const { gCurrentPage } = props;
 
   useEffect(() => {
-    document.title = `${constant.pageTitle} - ${gCurrentPage === "" ? "Loading..." : gCurrentPage}`;
+    document.title = `${pageTitle} - ${gCurrentPage === "" ? "Loading..." : gCurrentPage}`;
   }, [gCurrentPage]);
 
   const renderRoutes = () => {
