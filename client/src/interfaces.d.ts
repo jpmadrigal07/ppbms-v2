@@ -133,7 +133,8 @@ export interface I_Record {
     reasonRTS: string,
     remarks: string,
     dateReported: string,
-    deletedAt: string
+    deletedAt: string,
+    [key: string]: any
 }
 
 export interface I_LocationPriceProps {
