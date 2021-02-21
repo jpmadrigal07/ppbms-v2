@@ -210,7 +210,7 @@ router.delete("/:id", async (req, res) => {
         }
     } catch (error) {
         res.json({
-            dbRes: err,
+            dbRes: error,
             isSuccess: false
         });
     }

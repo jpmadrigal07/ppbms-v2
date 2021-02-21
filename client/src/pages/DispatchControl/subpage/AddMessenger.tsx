@@ -89,7 +89,7 @@ const AddMessenger = (props: I_AddMessengerProps) => {
                 id="formBasicPassword"
                 className="form-control"
                 value={date}
-                autoComplete="false"
+                autoComplete="off"
                 disabled={isAddDispatchControlMessengerLoading}
                 onChange={(date: Date) =>
                   setDate(

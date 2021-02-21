@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Form, Row, Col, Button, Spinner } from "react-bootstrap";
-import { I_ImportProps, I_GlobalState } from "../../interfaces";
+import { I_ImportProps, I_GlobalState, I_File, I_EncodeList } from "../../interfaces";
 import { uploadExcelFile, updateExcelFile } from "../../actions/recordActions";
+import { addEncodeList } from "../../actions/encodeListActions";
 import { getBarcodeMiddleText } from "../../actions/barcodeMiddleTextActions";
 import _ from "lodash";
 
@@ -10,14 +11,16 @@ const Import = (props: I_ImportProps) => {
   const {
     useBy,
     getBarcodeMiddleText,
+    addEncodeList,
     uploadExcelFile,
     updateExcelFile,
     isRecordAddLoading,
     isRecordUpdateLoading,
     barcodeMiddleTextData,
     recordData,
+    encodeListData
   } = props;
-  const [file, setFile] = useState("");
+  const [file, setFile] = useState<I_File | null>(null);
   const [sheetNumber, setSheetNumber] = useState("");
   const [barcodeMiddleText, setBarcodeMiddleText] = useState("");
   const [keyNumber, setKeyNumber] = useState(0);
@@ -26,7 +29,19 @@ const Import = (props: I_ImportProps) => {
     if (useBy === "masterlists") {
       getBarcodeMiddleText();
     }
+    setFile(null);
   }, []);
+
+  KAILANGAN I TEST ANG UPLOAD NG MASTERLIST KASI INI UPDATE KO
+
+  useEffect(() => {
+    const encodeList = encodeListData.find(
+      (data) => data.fileName === file?.name
+    );
+    if (!_.isNil(encodeList)) {
+      uploadExcelFile(encodeList._id, file, barcodeMiddleText);
+    }
+  }, [barcodeMiddleTextData]);
 
   useEffect(() => {
     setKeyNumber(Math.random());
@@ -42,7 +57,7 @@ const Import = (props: I_ImportProps) => {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     if (useBy === "masterlists") {
-      uploadExcelFile(file, barcodeMiddleText);
+      addEncodeList(file?.name)
     } else if (useBy === "encodemasterlists") {
       updateExcelFile(file, sheetNumber);
     }
@@ -120,10 +135,12 @@ const mapStateToProps = (gState: I_GlobalState) => ({
   isRecordUpdateLoading: gState.record.isUpdateLoading,
   recordData: gState.record.data,
   barcodeMiddleTextData: gState.barcodeMiddleText.data,
+  encodeListData: gState.encodeList.data
 });
 
 export default connect(mapStateToProps, {
   getBarcodeMiddleText,
+  addEncodeList,
   uploadExcelFile,
   updateExcelFile,
 })(Import);

@@ -6,26 +6,58 @@ import { triggerModalTopAlert } from "../../../actions/modalTopAlertActions";
 import ModalTopAlert from "../../../components/Alert/ModalTopAlert";
 import { recordPaginationDataCount } from "../../../constant";
 import { chunkArrayForPagination } from "../../../helper";
+import UpdateRecordModal from "../modal/UpdateRecordModal";
+import DeleteRecordModal from "../modal/DeleteRecordModal";
 import _ from "lodash";
 import moment from "moment";
 import { recordFilterKeys } from "../../../constant";
 
 const RecordModal = (props: I_RecordModal) => {
   const {
-    selectedRecordData,
+    selectedEncodeListId,
     modalTitle,
     isRecordModalOpen,
     setIsRecordModalOpen,
+    triggerModalTopAlert,
+    listToShow,
+    recordData,
   } = props;
 
+  const [selectedRecordData, setSelectedRecordData] = useState<I_Record[]>([]);
   const [recordPagination, setRecordPagination] = useState<any>([]);
   const [recordCurrentPage, setRecordCurrentPage] = useState(0);
   const [filterBy, setFilterBy] = useState("all");
   const [searchPhrase, setSearchPhrase] = useState("");
   const [uniqueDelType, setUniqueDelType] = useState<any>([]);
+  const [selectedRecordId, setSelectedRecordId] = useState("");
+  const [selectedRecordSubsName, setSelectedRecordSubsName] = useState("");
+  const [isDeleteRecordModalOpen, setIsDeleteRecordModalOpen] = useState(false);
+  const [isUpdateRecordModalOpen, setIsUpdateRecordModalOpen] = useState(false);
 
   useEffect(() => {
-    if (isRecordModalOpen && selectedRecordData.length > 0) {
+    if (recordData.length > 0) {
+      if (listToShow === "all") {
+        setSelectedRecordData(
+          recordData.filter((res) => res.encodeListId === selectedEncodeListId)
+        );
+      } else if (listToShow === "unassigned") {
+        setSelectedRecordData(
+          recordData.filter(
+            (res) =>
+              res.encodeListId === selectedEncodeListId &&
+              _.isNil(res.messengerId)
+          )
+        );
+      }
+    }
+  }, [recordData, isRecordModalOpen]);
+
+  useEffect(() => {
+    if (
+      isRecordModalOpen &&
+      selectedRecordData.length > 0 &&
+      searchPhrase === ""
+    ) {
       setRecordPagination(
         chunkArrayForPagination(
           selectedRecordData.slice(0).reverse(),
@@ -39,15 +71,18 @@ const RecordModal = (props: I_RecordModal) => {
           })
         )
       );
+    } else {
+      searchPagination();
     }
   }, [selectedRecordData, isRecordModalOpen]);
 
   useEffect(() => {
-    if (
-      isRecordModalOpen &&
-      selectedRecordData.length > 0 &&
-      searchPhrase !== ""
-    ) {
+    setRecordCurrentPage(0);
+    searchPagination();
+  }, [searchPhrase, filterBy]);
+
+  const searchPagination = () => {
+    if (isRecordModalOpen && selectedRecordData.length > 0) {
       const searchResult = searchSpecific(filterBy, searchPhrase);
       setRecordPagination(
         chunkArrayForPagination(
@@ -56,7 +91,7 @@ const RecordModal = (props: I_RecordModal) => {
         )
       );
     }
-  }, [searchPhrase, filterBy]);
+  };
 
   const searchSpecific = (filter: string, value: string) => {
     if (filter === "all") {
@@ -68,7 +103,8 @@ const RecordModal = (props: I_RecordModal) => {
               .includes(value.toLowerCase());
             return String(isExist);
           });
-          return result.includes("true") ? res : null;
+          const isIncluded = result.includes("true") ? res : null;
+          return value === "" ? res : isIncluded;
         })
         .filter((res) => !_.isNil(res));
     } else {
@@ -77,7 +113,8 @@ const RecordModal = (props: I_RecordModal) => {
           const result = res[filter]
             .toLowerCase()
             .includes(value.toLowerCase());
-          return result ? res : null;
+          const isIncluded = result ? res : null;
+          return value === "" ? res : isIncluded;
         })
         .filter((res) => !_.isNil(res));
     }
@@ -113,6 +150,12 @@ const RecordModal = (props: I_RecordModal) => {
   ) => {
     const itemNumber =
       recordCurrentPage * recordPaginationDataCount + (index + 1);
+    const dateRecievedFormatted = !_.isNil(dateRecieved)
+      ? moment(dateRecieved).format("MM/DD/YYYY")
+      : "";
+    const dateReportedFormatted = !_.isNil(dateReported)
+      ? moment(dateReported).format("MM/DD/YYYY")
+      : "";
     return (
       <tr key={index}>
         <td>{itemNumber}</td>
@@ -132,17 +175,43 @@ const RecordModal = (props: I_RecordModal) => {
         <td>{subsName}</td>
         <td>{barCode}</td>
         <td>{acctNum}</td>
-        <td>{dateRecieved}</td>
+        <td>{dateRecievedFormatted}</td>
         <td>{recievedBy}</td>
         <td>{relation}</td>
         <td>{messenger}</td>
         <td>{status}</td>
         <td>{reasonRTS}</td>
         <td>{remarks}</td>
-        <td>{moment(dateReported).format("MMM D, YYYY -  h:mm A")}</td>
-        <td>Edit</td>
+        <td>{dateReportedFormatted}</td>
+        <td>
+          <span
+            onClick={() => updateRecord(id)}
+            style={{ color: "#007bff", cursor: "pointer" }}
+          >
+          Edit
+          </span>{" "}|{" "}
+          <span
+            onClick={() => deleteRecord(id, subsName)}
+            style={{ color: "#007bff", cursor: "pointer" }}
+          >
+            Delete
+          </span>
+        </td>
       </tr>
     );
+  };
+
+  const updateRecord = (recordId: string) => {
+    triggerModalTopAlert(false, "", "");
+    setSelectedRecordId(recordId);
+    setIsUpdateRecordModalOpen(true);
+  };
+
+  const deleteRecord = (recordId: string, recordSubsName: string) => {
+    triggerModalTopAlert(false, "", "");
+    setSelectedRecordId(recordId);
+    setSelectedRecordSubsName(recordSubsName);
+    setIsDeleteRecordModalOpen(true);
   };
 
   return (
@@ -157,44 +226,45 @@ const RecordModal = (props: I_RecordModal) => {
         </Modal.Header>
         <Modal.Body>
           <ModalTopAlert />
+
+          <Form.Group controlId="exampleForm.ControlSelect1">
+            <Form.Control
+              as="select"
+              onChange={(e) => setFilterBy(e.target.value)}
+            >
+              <option value="all">Filter by All</option>
+              <option value="cycleCode">Filter by Cycle Code</option>
+              <option value="barCode">Filter by Barcode</option>
+              <option value="delType">Filter by Delivery Type</option>
+              <option value="sender">Filter by Sender (Company)</option>
+              <option value="subsName">Filter by Subscriber's Name</option>
+            </Form.Control>
+          </Form.Group>
+          {filterBy !== "delType" ? (
+            <Form.Group controlId="exampleForm.ControlSelect1">
+              <Form.Control
+                type="text"
+                name="searchPhrase"
+                value={searchPhrase}
+                placeholder="Search Record"
+                onChange={(e) => setSearchPhrase(e.target.value)}
+              />
+            </Form.Group>
+          ) : (
+            <Form.Group controlId="exampleForm.ControlSelect1">
+              <Form.Control
+                as="select"
+                onChange={(e) => setSearchPhrase(e.target.value)}
+              >
+                <option>-- Select Delivery Type --</option>
+                {uniqueDelType.map((res: string) => {
+                  return <option>{res}</option>;
+                })}
+              </Form.Control>
+            </Form.Group>
+          )}
           {isRecordModalOpen && recordPagination.length > 0 ? (
             <>
-              <Form.Group controlId="exampleForm.ControlSelect1">
-                <Form.Control
-                  as="select"
-                  onChange={(e) => setFilterBy(e.target.value)}
-                >
-                  <option value="all">Filter by All</option>
-                  <option value="cycleCode">Filter by Cycle Code</option>
-                  <option value="barCode">Filter by Barcode</option>
-                  <option value="delType">Filter by Delivery Type</option>
-                  <option value="sender">Filter by Sender (Company)</option>
-                  <option value="subsName">Filter by Subscriber's Name</option>
-                </Form.Control>
-              </Form.Group>
-              {filterBy !== "delType" ? (
-                <Form.Group controlId="exampleForm.ControlSelect1">
-                  <Form.Control
-                    type="text"
-                    name="searchPhrase"
-                    value={searchPhrase}
-                    placeholder="Search Record"
-                    onChange={(e) => setSearchPhrase(e.target.value)}
-                  />
-                </Form.Group>
-              ) : (
-                <Form.Group controlId="exampleForm.ControlSelect1">
-                  <Form.Control
-                    as="select"
-                    onChange={(e) => setSearchPhrase(e.target.value)}
-                  >
-                    <option>-- Select Delivery Type --</option>
-                    {uniqueDelType.map((res: string) => {
-                      return <option>{res}</option>;
-                    })}
-                  </Form.Control>
-                </Form.Group>
-              )}
               <div style={{ overflow: "auto" }}>
                 <Table striped bordered hover>
                   <thead>
@@ -294,7 +364,7 @@ const RecordModal = (props: I_RecordModal) => {
               </Pagination>
             </>
           ) : (
-            <h5 style={{ color: "gray" }}>No data...</h5>
+            <h5 style={{ color: "gray" }}>No data found.</h5>
           )}
         </Modal.Body>
         <Modal.Footer>
@@ -306,10 +376,27 @@ const RecordModal = (props: I_RecordModal) => {
           </Button>
         </Modal.Footer>
       </Modal>
+      <UpdateRecordModal
+        selectedRecordId={selectedRecordId}
+        isUpdateRecordModalOpen={isUpdateRecordModalOpen}
+        setIsUpdateRecordModalOpen={(res: boolean) =>
+          setIsUpdateRecordModalOpen(res)
+        }
+      />
+      <DeleteRecordModal
+        selectedRecordSubsName={selectedRecordSubsName}
+        selectedRecordId={selectedRecordId}
+        isDeleteRecordModalOpen={isDeleteRecordModalOpen}
+        setIsDeleteRecordModalOpen={(res: boolean) =>
+          setIsDeleteRecordModalOpen(res)
+        }
+      />
     </>
   );
 };
 
-const mapStateToProps = (gState: I_GlobalState) => ({});
+const mapStateToProps = (gState: I_GlobalState) => ({
+  recordData: gState.record.data,
+});
 
-export default connect(mapStateToProps, {})(RecordModal);
+export default connect(mapStateToProps, { triggerModalTopAlert })(RecordModal);

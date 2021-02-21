@@ -146,7 +146,6 @@ router.put("/:id", async (req, res) => {
 // @desc    Update A BarcodeMiddleText
 // @access  Private
 router.patch("/:id", async (req, res) => {
-  console.log('req.body', req.body)
   let toUpdate = {};
   const code = req.body.code;
   if (code) toUpdate.code = code;

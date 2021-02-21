@@ -5,6 +5,10 @@ import AddMessenger from "./subpage/AddMessenger";
 const DispatchControl = () => {
   const [key, setKey] = useState("lists");
 
+  // FIX when importing new masterlist on masterlists, on the view tab, you cannot see the encode list real time
+
+  // Investigate all functions on all fixed pages and fix all for smooth ux
+
   return (
     <>
       <Container>
@@ -14,7 +18,7 @@ const DispatchControl = () => {
           onSelect={(k: any) => setKey(k)}
         >
           <Tab eventKey="lists" title="Lists">
-            <h4>asdasd</h4>
+            <h4 style={{marginTop: '15px'}}>Under Construction</h4>
           </Tab>
           <Tab eventKey="addMessenger" title="Add Messenger">
             <AddMessenger/>

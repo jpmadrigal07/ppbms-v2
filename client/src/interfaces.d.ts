@@ -34,6 +34,11 @@ export interface I_GlobalState {
         message: string,
         type: string
     },
+    secondModalTopAlert: {
+        showAlert: boolean,
+        message: string,
+        type: string
+    },
     dispatchControlMessenger: {
         isLoading: boolean,
         isUpdateLoading: boolean,
@@ -175,6 +180,13 @@ export interface I_ModalTopAlertProps {
     triggerModalTopAlert: Function
 }
 
+export interface I_SecondModalTopAlertProps {
+    showAlert: boolean,
+    message: string,
+    type: string,
+    triggerSecondModalTopAlert: Function
+}
+
 export interface I_NavbarTopProps {
     gCurrentPage: string,
     gSetCurrentPage: Function,
@@ -249,6 +261,7 @@ export interface I_DeleteBarcodeMiddleTextModal {
 }
 
 export interface I_ImportProps {
+    addEncodeList: Function,
     uploadExcelFile: Function,
     updateExcelFile: Function,
     getBarcodeMiddleText: Function,
@@ -256,19 +269,67 @@ export interface I_ImportProps {
     isRecordUpdateLoading: boolean,
     recordData: I_Record[],
     useBy: string,
-    barcodeMiddleTextData: I_BarcodeMiddleText[]
+    barcodeMiddleTextData: I_BarcodeMiddleText[],
+    encodeListData: I_EncodeList[]
 }
 
 export interface I_MasterListViewProps {
     recordData: I_Record[],
     encodeListData: I_EncodeList[],
-    isEncodeListLoading: boolean
+    isEncodeListLoading: boolean,
+    bulkDeleteRecord: Function,
+    isRecordLoading: boolean,
+    triggerModalTopAlert: Function
 }
 
 export interface I_RecordModal {
-    selectedRecordData: I_Record[],
+    selectedEncodeListId: string,
     isRecordModalOpen: boolean,
     modalTitle: string,
-    setIsRecordModalOpen: Function
+    setIsRecordModalOpen: Function,
+    recordData: I_Record[],
+    listToShow: string,
+    triggerModalTopAlert: Function
 }
+
+export interface I_DeleteEncodeListModal {
+    selectedEncodeListFileName: string,
+    selectedEncodeListId: string,
+    isDeleteEncodeListModalOpen: boolean,
+    setIsDeleteEncodeListModalOpen: Function,
+    isEncodeListDeleteLoading: boolean,
+    deleteEncodeList: Function,
+    encodeListData: I_EncodeList[]
+}
+
+export interface I_DeleteRecordModal {
+    selectedRecordSubsName: string,
+    selectedRecordId: string,
+    isDeleteRecordModalOpen: boolean,
+    setIsDeleteRecordModalOpen: Function,
+    isRecordDeleteLoading: boolean,
+    deleteRecord: Function,
+    recordData: I_Record[],
+    triggerSecondModalTopAlert: Function
+}
+
+export interface I_UpdateRecordModal {
+    selectedRecordId: string,
+    isUpdateRecordModalOpen: boolean,
+    setIsUpdateRecordModalOpen: Function,
+    recordData: I_Record[],
+    triggerSecondModalTopAlert: Function,
+    isRecordUpdateLoading: boolean,
+    updateRecord: Function
+}
+
+export interface I_File {
+    name: string,
+    lastModified: number,
+    lastModifiedDate: Date,
+    size: number,
+    type: string,
+    webkitRelativePath: string
+}
+
 

@@ -14,7 +14,7 @@ const Report = () => {
           onSelect={(k: any) => setKey(k)}
         >
           <Tab eventKey="export" title="Export">
-            <h4>asdasd</h4>
+            <h4 style={{marginTop: '15px'}}>Under Construction</h4>
           </Tab>
           <Tab eventKey="settings" title="Settings">
             <LocationPrice/>

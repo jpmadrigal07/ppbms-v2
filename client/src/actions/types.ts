@@ -43,5 +43,6 @@ export const DELETE_RECORD = 'DELETE_RECORD';
 export const UPDATE_RECORD = 'UPDATE_RECORD';
 export const RECORD_LOADER = "RECORD_LOADER";
 
-export const TOP_ALERT = 'TOP_ALERT'
-export const MODAL_TOP_ALERT = 'MODAL_TOP_ALERT'
+export const TOP_ALERT = 'TOP_ALERT';
+export const MODAL_TOP_ALERT = 'MODAL_TOP_ALERT';
+export const SECOND_MODAL_TOP_ALERT = 'SECOND_MODAL_TOP_ALERT';

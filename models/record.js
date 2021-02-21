@@ -28,7 +28,7 @@ const record = new Schema({
     barCode: String,
     acctNum: String,
     dateRecieved: { 
-        type: String,
+        type: Date,
         default: null
     },
     recievedBy: { 

@@ -4,6 +4,7 @@ import authBarReducer from './authReducers';
 import userReducer from './userReducers';
 import topAlertReducer from './topAlertReducers';
 import modalTopAlertReducer from './modalTopAlertReducers';
+import secondModalTopAlertReducer from './secondModalTopAlertReducers';
 import areaPriceReducer from './areaPriceReducers';
 import dispatchControlMessengerReducer from './dispatchControlMessengerReducers';
 import barcodeMiddleTextReducer from './barcodeMiddleTextReducers';
@@ -16,6 +17,7 @@ export default combineReducers({
     auth: authBarReducer,
     topAlert: topAlertReducer,
     modalTopAlert: modalTopAlertReducer,
+    secondModalTopAlert: secondModalTopAlertReducer,
     areaPrice: areaPriceReducer,
     dispatchControlMessenger: dispatchControlMessengerReducer,
     barcodeMiddleText: barcodeMiddleTextReducer,
