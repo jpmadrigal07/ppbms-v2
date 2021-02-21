@@ -32,8 +32,6 @@ const Import = (props: I_ImportProps) => {
     setFile(null);
   }, []);
 
-  KAILANGAN I TEST ANG UPLOAD NG MASTERLIST KASI INI UPDATE KO
-
   useEffect(() => {
     const encodeList = encodeListData.find(
       (data) => data.fileName === file?.name
