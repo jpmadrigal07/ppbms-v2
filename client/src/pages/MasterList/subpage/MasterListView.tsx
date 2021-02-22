@@ -25,7 +25,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
     bulkDeleteRecord,
     isEncodeListLoading,
     triggerModalTopAlert,
-    isRecordLoading,
+    isRecordLoading
   } = props;
 
   const [encodeListPagination, setEncodeListPagination] = useState<any>([]);
@@ -59,7 +59,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
       return res._id;
     });
     if (
-      recordEncodeListIds.length !== encodeListIds.length &&
+      recordEncodeListIds.length > encodeListIds.length &&
       !isRecordLoading
     ) {
       const deletedEncodeList = recordEncodeListIds.filter(function (val) {
@@ -288,7 +288,7 @@ const mapStateToProps = (gState: I_GlobalState) => ({
   encodeListData: gState.encodeList.data,
   recordData: gState.record.data,
   isEncodeListLoading: gState.encodeList.isLoading,
-  isRecordLoading: gState.record.isLoading,
+  isRecordLoading: gState.record.isLoading
 });
 
 export default connect(mapStateToProps, {

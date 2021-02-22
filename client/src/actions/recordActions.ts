@@ -89,7 +89,7 @@ export const uploadExcelFile = (encodeListId: string, file: string, barcodeMiddl
           type: TOP_ALERT,
           payload: {
             showAlert: true,
-            message: "Successfully uploaded",
+            message: "Successfully uploaded record",
             type: "success",
           },
         });
@@ -154,6 +154,7 @@ export const updateExcelFile = (file: string, sheetNumber: string) => (
 };
 
 export const bulkDeleteRecord = (ids: string[]) => (dispatch: Function) => {
+  console.log('bulk delete')
   dispatch(setRecordLoader("delete", true));
   axios
     .delete(`/api/record/bulk`, { data: ids })
@@ -181,6 +182,7 @@ export const bulkDeleteRecord = (ids: string[]) => (dispatch: Function) => {
 };
 
 export const deleteRecord = (id: string) => (dispatch: Function) => {
+  console.log('delete')
   dispatch(setRecordLoader("delete", true));
   axios
     .delete(`/api/record/${id}`)

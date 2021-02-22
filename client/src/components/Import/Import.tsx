@@ -36,10 +36,10 @@ const Import = (props: I_ImportProps) => {
     const encodeList = encodeListData.find(
       (data) => data.fileName === file?.name
     );
-    if (!_.isNil(encodeList)) {
+    if (!_.isNil(encodeList) && !_.isNil(file)) {
       uploadExcelFile(encodeList._id, file, barcodeMiddleText);
     }
-  }, [barcodeMiddleTextData]);
+  }, [encodeListData]);
 
   useEffect(() => {
     setKeyNumber(Math.random());

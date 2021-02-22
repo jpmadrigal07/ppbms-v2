@@ -55,7 +55,7 @@ router.get("/:id", async (req, res) => {
 // @access  Private
 router.post("/", async (req, res) => {
     const fileName = req.body.fileName;
-    if (!_.isNil(fileName)) {
+    if (!_.isNil(fileName) && fileName !== "") {
         const newEncodeList = new EncodeList({
             fileName
         });
@@ -75,7 +75,7 @@ router.post("/", async (req, res) => {
                 });
             } else {
                 res.json({
-                    dbRes: "Encode list filename must be unique.",
+                    dbRes: "Encode list filename must be unique",
                     isSuccess: false
                 });
             }
@@ -87,7 +87,7 @@ router.post("/", async (req, res) => {
         }
     } else {
         res.json({
-            dbRes: "Required values are either invalid or empty.",
+            dbRes: "Required values are either invalid or empty",
             isSuccess: false
         });
     }

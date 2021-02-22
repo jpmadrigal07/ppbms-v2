@@ -5,6 +5,7 @@ import {
   DELETE_ENCODE_LIST,
   ADD_ENCODE_LIST,
   MODAL_TOP_ALERT,
+  TOP_ALERT,
 } from "./types";
 import _ from "lodash";
 
@@ -30,49 +31,41 @@ export const addEncodeList = (fileName: string | undefined) => (
   dispatch: Function
 ) => {
   dispatch(setEncodeListLoader("add", true));
-  if (!_.isNil(fileName)) {
-    axios
-      .post(`/api/encodeList`, { fileName })
-      .then((res) => {
-        if (res.data.isSuccess) {
-          dispatch({
-            type: ADD_ENCODE_LIST,
-            payload: res.data.dbRes,
-          });
-          dispatch({
-            type: MODAL_TOP_ALERT,
-            payload: {
-              showAlert: true,
-              message: "Successfully added",
-              type: "success",
-            },
-          });
-        } else {
-          dispatch(setEncodeListLoader("add", false));
-          dispatch({
-            type: MODAL_TOP_ALERT,
-            payload: {
-              showAlert: true,
-              message: res.data.dbRes,
-              type: "danger",
-            },
-          });
-        }
-      })
-      .catch((err) => {
+  axios
+    .post(`/api/encodeList`, { fileName })
+    .then((res) => {
+      if (res.data.isSuccess) {
+        dispatch({
+          type: ADD_ENCODE_LIST,
+          payload: res.data.dbRes,
+        });
+        dispatch({
+          type: TOP_ALERT,
+          payload: {
+            showAlert: true,
+            message: "Successfully added encode list",
+            type: "success",
+          },
+        });
+      } else {
         dispatch(setEncodeListLoader("add", false));
         dispatch({
-          type: MODAL_TOP_ALERT,
-          payload: { showAlert: true, message: err, type: "danger" },
+          type: TOP_ALERT,
+          payload: {
+            showAlert: true,
+            message: res.data.dbRes,
+            type: "danger",
+          },
         });
+      }
+    })
+    .catch((err) => {
+      dispatch(setEncodeListLoader("add", false));
+      dispatch({
+        type: TOP_ALERT,
+        payload: { showAlert: true, message: err, type: "danger" },
       });
-  } else {
-    dispatch(setEncodeListLoader("add", false));
-    dispatch({
-      type: MODAL_TOP_ALERT,
-      payload: { showAlert: true, message: "File is missing", type: "danger" },
     });
-  }
 };
 
 export const deleteEncodeList = (id: string) => (dispatch: Function) => {
