@@ -5,6 +5,7 @@ import {
   DELETE_ENCODE_LIST,
   ADD_ENCODE_LIST,
   MODAL_TOP_ALERT,
+  ADD_DASHBOARD_COUNT,
   TOP_ALERT,
 } from "./types";
 import _ from "lodash";
@@ -22,7 +23,7 @@ export const getEncodeList = () => (dispatch: Function) => {
     .catch((err) => {
       dispatch({
         type: MODAL_TOP_ALERT,
-        payload: { showAlert: true, message: err, type: "danger" },
+        payload: { showAlert: true, message: err.message, type: "danger" },
       });
     });
 };
@@ -47,6 +48,13 @@ export const addEncodeList = (fileName: string | undefined) => (
             type: "success",
           },
         });
+        dispatch({
+          type: ADD_DASHBOARD_COUNT,
+          payload: {
+            count: 1,
+            type: "importedList"
+          }
+        });
       } else {
         dispatch(setEncodeListLoader("add", false));
         dispatch({
@@ -63,7 +71,7 @@ export const addEncodeList = (fileName: string | undefined) => (
       dispatch(setEncodeListLoader("add", false));
       dispatch({
         type: TOP_ALERT,
-        payload: { showAlert: true, message: err, type: "danger" },
+        payload: { showAlert: true, message: err.message, type: "danger" },
       });
     });
 };
@@ -98,7 +106,7 @@ export const deleteEncodeList = (id: string) => (dispatch: Function) => {
       dispatch(setEncodeListLoader("delete", false));
       dispatch({
         type: MODAL_TOP_ALERT,
-        payload: { showAlert: true, message: err, type: "danger" },
+        payload: { showAlert: true, message: err.message, type: "danger" },
       });
     });
 };

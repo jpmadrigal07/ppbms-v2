@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { Card, Container, Row, Col } from "react-bootstrap";
+import { Card, Container, Row, Col, Spinner } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFileImport,
@@ -10,58 +10,43 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import "../../App.scss";
 import "./Dashboard.scss";
-import {
-  getEncodeList
-} from "../../actions/encodeListActions";
-import {
-  getRecord
-} from "../../actions/recordActions";
-import {
-  getDispatchControlMessengers
-} from "../../actions/dispatchControlMessengerActions";
+import { getDashboardCount } from "../../actions/dashboardCountActions";
+import { getEncodeList } from "../../actions/encodeListActions";
+import { getRecord } from "../../actions/recordActions";
+import { getDispatchControlMessengers } from "../../actions/dispatchControlMessengerActions";
 import { I_DashboardProps, I_GlobalState } from "../../interfaces";
 import _ from "lodash";
 
 const Dashboard = (props: I_DashboardProps) => {
   const {
-    getEncodeList,
-    getRecord,
-    getDispatchControlMessengers,
+    getDashboardCount,
     gAuthData,
-    dispatchControlMessengerData,
-    encodeListData,
-    recordData
+    importedListCount,
+    isImportedListLoading,
+    listDataCount,
+    isListDataLoading,
+    dispatchControlCount,
+    isDispatchControlLoading,
+    listCompletedCount,
+    isListCompletedLoading
   } = props;
 
-  const [importedListCount, setImportedListCount] = useState(0); 
-  const [listsDataCount, setListsDataCount] = useState(0); 
-  const [dispatchControlCount, setDispatchControlCount] = useState(0); 
-  const [listCompletedCount, setListCompletedCount] = useState(0); 
-
   useEffect(() => {
-    if(gAuthData && gAuthData !== "") {
-      getEncodeList();
-      getRecord();
-      getDispatchControlMessengers();
+    if (gAuthData && gAuthData !== "") {
+      if(importedListCount === 0) {
+        getDashboardCount("importedList")
+      }
+      if(listDataCount === 0) {
+        getDashboardCount("listData")
+      }
+      if(dispatchControlCount === 0) {
+        getDashboardCount("dispatchControl")
+      }
+      if(listCompletedCount === 0) {
+        getDashboardCount("listCompleted")
+      }
     }
   }, [gAuthData]);
-
-  useEffect(() => {
-    const data = dispatchControlMessengerData.filter(data => _.isNil(data.deletedAt));
-    setDispatchControlCount(data.length)
-  }, [dispatchControlMessengerData]);
-
-  useEffect(() => {
-    const data = encodeListData.filter(data => _.isNil(data.deletedAt));
-    setImportedListCount(data.length)
-  }, [encodeListData]);
-
-  useEffect(() => {
-    const listData = recordData.filter(data => _.isNil(data.deletedAt));
-    setListsDataCount(listData.length)
-    const listCompleted = recordData.filter(data => _.isNil(data.deletedAt));
-    setListCompletedCount(listCompleted.length)
-  }, [recordData]);
 
   const formatCash = (n: number) => {
     if (n < 1e3) return n;
@@ -81,7 +66,11 @@ const Dashboard = (props: I_DashboardProps) => {
             </Card.Header>
             <Card.Body>
               <Card.Text className="DataText">
-                {formatCash(importedListCount)}
+                {!isImportedListLoading ? (
+                  formatCash(importedListCount)
+                ) : (
+                  <Spinner animation="grow" />
+                )}
               </Card.Text>
             </Card.Body>
           </Card>
@@ -89,11 +78,15 @@ const Dashboard = (props: I_DashboardProps) => {
         <Col>
           <Card>
             <Card.Header as="h5">
-              <FontAwesomeIcon icon={faClipboardList} /> Lists Data
+              <FontAwesomeIcon icon={faClipboardList} /> List Data
             </Card.Header>
             <Card.Body>
               <Card.Text className="DataText">
-                {formatCash(listsDataCount)}
+                {!isListDataLoading ? (
+                  formatCash(listDataCount)
+                ) : (
+                  <Spinner animation="grow" />
+                )}
               </Card.Text>
             </Card.Body>
           </Card>
@@ -105,7 +98,11 @@ const Dashboard = (props: I_DashboardProps) => {
             </Card.Header>
             <Card.Body>
               <Card.Text className="DataText">
-                {formatCash(dispatchControlCount)}
+                {!isDispatchControlLoading ? (
+                  formatCash(dispatchControlCount)
+                ) : (
+                  <Spinner animation="grow" />
+                )}
               </Card.Text>
             </Card.Body>
           </Card>
@@ -117,7 +114,11 @@ const Dashboard = (props: I_DashboardProps) => {
             </Card.Header>
             <Card.Body>
               <Card.Text className="DataText">
-                {formatCash(listCompletedCount)}
+                {!isListCompletedLoading ? (
+                  formatCash(listCompletedCount)
+                ) : (
+                  <Spinner animation="grow" />
+                )}
               </Card.Text>
             </Card.Body>
           </Card>
@@ -130,12 +131,20 @@ const Dashboard = (props: I_DashboardProps) => {
 const mapStateToProps = (gState: I_GlobalState) => ({
   gAuthData: gState.auth.user,
   dispatchControlMessengerData: gState.dispatchControlMessenger.data,
-  encodeListData: gState.encodeList.data,
-  recordData: gState.record.data
+  recordData: gState.record.data,
+  importedListCount: gState.dashboardCount.importedList,
+  isImportedListLoading: gState.dashboardCount.isImportedListLoading,
+  listDataCount: gState.dashboardCount.listData,
+  isListDataLoading: gState.dashboardCount.isListDataLoading,
+  dispatchControlCount: gState.dashboardCount.dispatchControl,
+  isDispatchControlLoading: gState.dashboardCount.isDispatchControlLoading,
+  listCompletedCount: gState.dashboardCount.listCompleted,
+  isListCompletedLoading: gState.dashboardCount.isListCompletedLoading
 });
 
 export default connect(mapStateToProps, {
+  getDashboardCount,
   getEncodeList,
   getRecord,
-  getDispatchControlMessengers
+  getDispatchControlMessengers,
 })(Dashboard);

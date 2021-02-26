@@ -9,6 +9,8 @@ import areaPriceReducer from './areaPriceReducers';
 import dispatchControlMessengerReducer from './dispatchControlMessengerReducers';
 import barcodeMiddleTextReducer from './barcodeMiddleTextReducers';
 import encodeListReducer from './encodeListReducers';
+import encodeListCountReducer from './encodeListCountReducers';
+import dashboardCountReducer from './dashboardCountReducers';
 import recordReducer from './recordReducers';
 
 export default combineReducers({
@@ -22,5 +24,7 @@ export default combineReducers({
     dispatchControlMessenger: dispatchControlMessengerReducer,
     barcodeMiddleText: barcodeMiddleTextReducer,
     encodeList: encodeListReducer,
+    encodeListCount: encodeListCountReducer,
+    dashboardCount: dashboardCountReducer,
     record: recordReducer
 });

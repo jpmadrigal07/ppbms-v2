@@ -35,6 +35,32 @@ router.get("/", async (req, res) => {
   }
 });
 
+// @route   GET api/record/count
+// @desc    Get All Record
+// @access  Public
+router.get("/count", async (req, res) => {
+  const condition = !_.isNil(req.query.condition)
+    ? JSON.parse(req.query.condition)
+    : {};
+  if (_.isNil(condition.deletedAt)) {
+    condition.deletedAt = {
+      $exists: false,
+    };
+  }
+  try {
+    const getAllRecord = await Record.find(condition).estimatedDocumentCount();
+    res.json({
+      dbRes: getAllRecord,
+      isSuccess: true,
+    });
+  } catch (error) {
+    res.json({
+      dbRes: err,
+      isSuccess: false,
+    });
+  }
+});
+
 // @route   GET api/record/:id
 // @desc    Get Single Record
 // @access  Public
@@ -239,8 +265,8 @@ router.post("/upload", async (req, res) => {
         const recordEncodeList = await Record.find({
           encodeListId: encodeListId,
           deletedAt: {
-            $exists: false
-          }
+            $exists: false,
+          },
         });
         if (recordEncodeList.length === 0) {
           const workbook = await extractExcelFile(uploadPath);
@@ -266,7 +292,9 @@ router.post("/upload", async (req, res) => {
                     encodeListId: encodeListId,
                     sender: values[2],
                     delType: values[3],
-                    pud: !_.isNil(values[4]) ? moment(values[4]).format("MM/DD/YYYY") : null,
+                    pud: !_.isNil(values[4])
+                      ? moment(values[4]).format("MM/DD/YYYY")
+                      : null,
                     month: values[5],
                     year: currentYear,
                     jobNum: values[6],
@@ -734,7 +762,7 @@ router.patch("/:id", async (req, res) => {
             updatedAt: Date.now(),
           },
           {
-            new: true
+            new: true,
           }
         );
         res.json({

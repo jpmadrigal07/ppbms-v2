@@ -21,7 +21,7 @@ export const getBarcodeMiddleText = () => (dispatch: Function) => {
     .catch((err) => {
       dispatch({
         type: MODAL_TOP_ALERT,
-        payload: { showAlert: true, message: err, type: "danger" },
+        payload: { showAlert: true, message: err.message, type: "danger" },
       });
     });
 };
@@ -58,7 +58,7 @@ export const addBarcodeMiddleText = (
       dispatch(setBarcodeMiddleTextLoader("add", false));
       dispatch({
         type: MODAL_TOP_ALERT,
-        payload: { showAlert: true, message: err, type: "danger" },
+        payload: { showAlert: true, message: err.message, type: "danger" },
       });
     });
 };
@@ -96,7 +96,7 @@ export const updateBarcodeMiddleText = (
       dispatch(setBarcodeMiddleTextLoader("update", false));
       dispatch({
         type: MODAL_TOP_ALERT,
-        payload: { showAlert: true, message: err, type: "danger" },
+        payload: { showAlert: true, message: err.message, type: "danger" },
       });
     });
 };
@@ -133,7 +133,7 @@ export const deleteBarcodeMiddleText = (
       dispatch(setBarcodeMiddleTextLoader("delete", false));
       dispatch({
         type: MODAL_TOP_ALERT,
-        payload: { showAlert: true, message: err, type: "danger" },
+        payload: { showAlert: true, message: err.message, type: "danger" },
       });
     });
 };

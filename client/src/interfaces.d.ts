@@ -53,12 +53,27 @@ export interface I_GlobalState {
         isDeleteLoading: boolean,
         data: I_EncodeList[]
     }
+    encodeListCount: {
+        isLoading: boolean,
+        dataCount: number,
+        pageCount: number
+    }
     record: {
         isLoading: boolean,
         isUpdateLoading: boolean,
         isAddLoading: boolean,
         isDeleteLoading: boolean,
         data: I_Record[]
+    }
+    dashboardCount: {
+        isImportedListLoading: boolean,
+        isListDataLoading: boolean,
+        isDispatchControlLoading: boolean,
+        isListCompletedLoading: boolean,
+        importedList: number,
+        listData: number,
+        dispatchControl: number,
+        listCompleted: number
     }
 }
 
@@ -210,13 +225,18 @@ export interface I_LoginCredentials {
 }
 
 export interface I_DashboardProps {
-    getEncodeList: Function,
+    getDashboardCount: Function,
     getRecord: Function,
     getDispatchControlMessengers: Function,
     gAuthData: any,
-    dispatchControlMessengerData: I_DispatchControlMessenger[],
-    encodeListData: I_EncodeList[],
-    recordData: I_Record[]
+    importedListCount: number,
+    isImportedListLoading: boolean,
+    listDataCount: number,
+    isListDataLoading: boolean,
+    dispatchControlCount: number,
+    isDispatchControlLoading: boolean,
+    listCompletedCount: number,
+    isListCompletedLoading: boolean
 }
 
 export interface I_UpdateLocationPriceModal {

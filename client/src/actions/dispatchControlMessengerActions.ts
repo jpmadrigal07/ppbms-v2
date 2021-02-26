@@ -20,7 +20,7 @@ export const getDispatchControlMessengers = () => (dispatch: Function) => {
       dispatch(setDispatchControlMessengerLoader("list", false));
       dispatch({
         type: TOP_ALERT,
-        payload: { showAlert: true, message: err, type: "danger" },
+        payload: { showAlert: true, message: err.message, type: "danger" },
       });
     });
 };
@@ -60,7 +60,7 @@ export const addDispatchControlMessenger = (
       dispatch(setDispatchControlMessengerLoader("add", false));
       dispatch({
         type: TOP_ALERT,
-        payload: { showAlert: true, message: err, type: "danger" },
+        payload: { showAlert: true, message: err.message, type: "danger" },
       });
     });
 };

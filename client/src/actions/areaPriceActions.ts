@@ -16,7 +16,7 @@ export const getAreaPrices = () => (dispatch: Function) => {
     .catch((err) => {
       dispatch({
         type: MODAL_TOP_ALERT,
-        payload: { showAlert: true, message: err, type: "danger" }
+        payload: { showAlert: true, message: err.message, type: "danger" }
       });
     });
 };
@@ -49,7 +49,7 @@ export const updateAreaPrice = (id: String, name: string, price: number) => (
         dispatch(setAreaPriceLoader("update", false));
         dispatch({
           type: MODAL_TOP_ALERT,
-          payload: { showAlert: true, message: err, type: "danger" }
+          payload: { showAlert: true, message: err.message, type: "danger" }
         });
       }
     );

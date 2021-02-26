@@ -8,7 +8,9 @@ import {
   UPDATE_RECORD,
   SECOND_MODAL_TOP_ALERT,
   DELETE_RECORD,
+  ADD_DASHBOARD_COUNT
 } from "./types";
+import _ from "lodash";
 
 export const getRecord = () => (dispatch: Function) => {
   dispatch(setRecordLoader("list", true));
@@ -23,7 +25,7 @@ export const getRecord = () => (dispatch: Function) => {
     .catch((err) => {
       dispatch({
         type: TOP_ALERT,
-        payload: { showAlert: true, message: err, type: "danger" },
+        payload: { showAlert: true, message: err.message, type: "danger" },
       });
     });
 };
@@ -59,7 +61,7 @@ export const updateRecord = (id: string, recordData: I_Record) => (
     .catch((err) => {
       dispatch({
         type: TOP_ALERT,
-        payload: { showAlert: true, message: err, type: "danger" },
+        payload: { showAlert: true, message: err.message, type: "danger" },
       });
     });
 };
@@ -93,6 +95,13 @@ export const uploadExcelFile = (encodeListId: string, file: string, barcodeMiddl
             type: "success",
           },
         });
+        dispatch({
+          type: ADD_DASHBOARD_COUNT,
+          payload: {
+            count: _.isArray(res.data.dbRes) ? res.data.dbRes.length : 0,
+            type: "listData"
+          }
+        });
       } else {
         dispatch({
           type: TOP_ALERT,
@@ -104,7 +113,7 @@ export const uploadExcelFile = (encodeListId: string, file: string, barcodeMiddl
     .catch((err) => {
       dispatch({
         type: TOP_ALERT,
-        payload: { showAlert: true, message: err, type: "danger" },
+        payload: { showAlert: true, message: err.message, type: "danger" },
       });
     });
 };
@@ -148,7 +157,7 @@ export const updateExcelFile = (file: string, sheetNumber: string) => (
     .catch((err) => {
       dispatch({
         type: TOP_ALERT,
-        payload: { showAlert: true, message: err, type: "danger" },
+        payload: { showAlert: true, message: err.message, type: "danger" },
       });
     });
 };
@@ -176,7 +185,7 @@ export const bulkDeleteRecord = (ids: string[]) => (dispatch: Function) => {
       dispatch(setRecordLoader("delete", false));
       dispatch({
         type: TOP_ALERT,
-        payload: { showAlert: true, message: err, type: "danger" },
+        payload: { showAlert: true, message: err.message, type: "danger" },
       });
     });
 };
@@ -212,7 +221,7 @@ export const deleteRecord = (id: string) => (dispatch: Function) => {
       dispatch(setRecordLoader("delete", false));
       dispatch({
         type: SECOND_MODAL_TOP_ALERT,
-        payload: { showAlert: true, message: err, type: "danger" },
+        payload: { showAlert: true, message: err.message, type: "danger" },
       });
     });
 };

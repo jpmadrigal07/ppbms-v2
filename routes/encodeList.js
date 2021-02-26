@@ -27,6 +27,31 @@ router.get("/", async (req, res) => {
     }
 });
 
+
+// @route   GET api/user
+// @desc    Get All encodeList
+// @access  Public
+router.get("/count", async (req, res) => {
+    const condition = !_.isNil(req.query.condition) ? JSON.parse(req.query.condition) : {};
+    if (_.isNil(condition.deletedAt)) {
+        condition.deletedAt = {
+            $exists: false
+        }
+    }
+    try {
+        const getAllEncodeList = await EncodeList.find(condition).estimatedDocumentCount();
+        res.json({
+            dbRes: getAllEncodeList,
+            isSuccess: true
+        });
+    } catch (error) {
+        res.json({
+            dbRes: err,
+            isSuccess: false
+        });
+    }
+});
+
 // @route   GET api/encodeList/:id
 // @desc    Get Single EncodeList
 // @access  Public
