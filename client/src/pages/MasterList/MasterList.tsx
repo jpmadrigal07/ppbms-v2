@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Container, Tabs, Tab } from "react-bootstrap";
 import MasterListSettings from "./subpage/MasterListSettings";
 import MasterListView from "./subpage/MasterListView";
+import MasterListViewSecond from "./subpage/MasterListViewSecond";
 import Import from "../../components/Import/Import";
 
 const MasterList = () => {

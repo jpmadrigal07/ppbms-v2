@@ -2,31 +2,36 @@ const express = require("express");
 const router = express.Router();
 const EncodeList = require("../models/encodeList");
 const _ = require("lodash");
+const moment = require("moment");
 
 // @route   GET api/user
 // @desc    Get All encodeList
 // @access  Public
 router.get("/", async (req, res) => {
     const condition = !_.isNil(req.query.condition) ? JSON.parse(req.query.condition) : {};
+    const limit = !_.isNil(req.query.limit) ? JSON.parse(req.query.limit) : 0;
+    const skip = !_.isNil(req.query.skip) ? JSON.parse(req.query.skip) : 0;
     if (_.isNil(condition.deletedAt)) {
         condition.deletedAt = {
             $exists: false
         }
     }
     try {
-        const getAllEncodeList = await EncodeList.find(condition);
+        const getAllEncodeList = await EncodeList.find(condition).skip(skip).limit(limit);
         res.json({
             dbRes: getAllEncodeList,
             isSuccess: true
         });
     } catch (error) {
         res.json({
-            dbRes: err,
+            dbRes: error.message,
             isSuccess: false
         });
     }
 });
 
+// GAWIN ANG PAG KUHA NG BAGONG NEXT 10 DATA SA DATABASE PAG PININDUT ANG NEXT SA PAGINATION
+// MAG GAWA NG BAGONG STATE PARA SA CURRENT PAGE DATA BUKOD PA ANG GLOBAL STATE NG ENCODE LIST
 
 // @route   GET api/user
 // @desc    Get All encodeList

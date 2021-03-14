@@ -58,12 +58,12 @@ const RecordModal = (props: I_RecordModal) => {
       selectedRecordData.length > 0 &&
       searchPhrase === ""
     ) {
-      setRecordPagination(
-        chunkArrayForPagination(
-          selectedRecordData.slice(0).reverse(),
-          recordPaginationDataCount
-        )
-      );
+      // setRecordPagination(
+      //   chunkArrayForPagination(
+      //     selectedRecordData.slice(0).reverse(),
+      //     recordPaginationDataCount
+      //   )
+      // );
       setUniqueDelType(
         _.uniq(
           selectedRecordData.map((res) => {
@@ -84,12 +84,12 @@ const RecordModal = (props: I_RecordModal) => {
   const searchPagination = () => {
     if (isRecordModalOpen && selectedRecordData.length > 0) {
       const searchResult = searchSpecific(filterBy, searchPhrase);
-      setRecordPagination(
-        chunkArrayForPagination(
-          searchResult.slice(0).reverse(),
-          recordPaginationDataCount
-        )
-      );
+      // setRecordPagination(
+      //   chunkArrayForPagination(
+      //     searchResult.slice(0).reverse(),
+      //     recordPaginationDataCount
+      //   )
+      // );
     }
   };
 

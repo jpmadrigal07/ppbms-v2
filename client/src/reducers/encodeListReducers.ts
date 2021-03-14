@@ -4,6 +4,7 @@ import {
   GET_ENCODE_LIST,
   DELETE_ENCODE_LIST,
   ENCODE_LIST_LOADER,
+  PAGE_LOADED_ENCODE_LIST
 } from "../actions/types";
 import { I_ReduxAction, I_EncodeList } from "../interfaces";
 import _ from "lodash";
@@ -13,7 +14,8 @@ const initialState = {
   isUpdateLoading: false,
   isAddLoading: false,
   isDeleteLoading: false,
-  data: [],
+  pageLoaded: [],
+  data: []
 };
 
 export default function (state = initialState, action: I_ReduxAction) {
@@ -46,8 +48,14 @@ export default function (state = initialState, action: I_ReduxAction) {
     case GET_ENCODE_LIST:
       return {
         ...state,
-        isLoading: false,
-        data: payload.dbRes,
+        data: [...state.data, ...payload.dbRes],
+        isLoading: false
+      };
+    case PAGE_LOADED_ENCODE_LIST:
+      return {
+        ...state,
+        pageLoaded: [...state.pageLoaded, payload],
+        isLoading: false
       };
     case DELETE_ENCODE_LIST:
       return {
@@ -61,3 +69,9 @@ export default function (state = initialState, action: I_ReduxAction) {
       return state;
   }
 }
+
+// GANTO ANG MAGING PAGINATION ARRAY STRUCTURE, ALISIN NA PAGINATION_ENCODE_LIST, FOR SEARCH NAMAN DAPAT SA MAIN ENCODELIST ARRAY SIYA MAG HANAP TAPOS STRUCTURE NALANG NG BAGONG PAGINATION
+// [{
+//     pageNumber: 1
+//     encodeListData: []
+// }]

@@ -51,7 +51,8 @@ export interface I_GlobalState {
         isUpdateLoading: boolean,
         isAddLoading: boolean,
         isDeleteLoading: boolean,
-        data: I_EncodeList[]
+        data: I_EncodeList[],
+        pageLoaded: number[]
     }
     encodeListCount: {
         isLoading: boolean,
@@ -299,7 +300,12 @@ export interface I_MasterListViewProps {
     isEncodeListLoading: boolean,
     bulkDeleteRecord: Function,
     isRecordLoading: boolean,
-    triggerModalTopAlert: Function
+    triggerModalTopAlert: Function,
+    importedListCount: number,
+    getEncodeList: Function,
+    currentPage: string,
+    addLoadedPage: Function,
+    pageLoaded: number[]
 }
 
 export interface I_RecordModal {

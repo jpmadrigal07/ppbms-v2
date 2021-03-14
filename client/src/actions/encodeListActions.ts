@@ -6,19 +6,35 @@ import {
   ADD_ENCODE_LIST,
   MODAL_TOP_ALERT,
   ADD_DASHBOARD_COUNT,
+  PAGE_LOADED_ENCODE_LIST,
   TOP_ALERT,
 } from "./types";
 import _ from "lodash";
 
-export const getEncodeList = () => (dispatch: Function) => {
+export const addLoadedPage = (pageNumber: number) => (dispatch: Function) => {
+  dispatch(setEncodeListLoader("list", true));
+  console.log('mylove', pageNumber)
+  dispatch({
+    type: PAGE_LOADED_ENCODE_LIST,
+    payload: pageNumber
+  });
+};
+
+export const getEncodeList = (variables: string | undefined, pageNumber: number | undefined) => (dispatch: Function) => {
   dispatch(setEncodeListLoader("list", true));
   axios
-    .get(`/api/encodeList`)
+    .get(`/api/encodeList${variables}`)
     .then((res) => {
       dispatch({
         type: GET_ENCODE_LIST,
         payload: res.data !== "" ? res.data : {},
       });
+      if(!_.isNil(pageNumber)) {
+        dispatch({
+          type: PAGE_LOADED_ENCODE_LIST,
+          payload: pageNumber
+        });
+      }
     })
     .catch((err) => {
       dispatch({

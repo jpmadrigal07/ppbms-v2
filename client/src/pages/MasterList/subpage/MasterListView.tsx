@@ -8,8 +8,8 @@ import {
   I_Record,
 } from "../../../interfaces";
 import "../MasterList.scss";
-import DatePicker from "react-datepicker";
 import { bulkDeleteRecord } from "../../../actions/recordActions";
+import { getEncodeList, addLoadedPage } from "../../../actions/encodeListActions";
 import { chunkArrayForPagination } from "../../../helper";
 import { encodeListPaginationDataCount } from "../../../constant";
 import { triggerModalTopAlert } from "../../../actions/modalTopAlertActions";
@@ -25,9 +25,15 @@ const MasterListView = (props: I_MasterListViewProps) => {
     bulkDeleteRecord,
     isEncodeListLoading,
     triggerModalTopAlert,
-    isRecordLoading
+    isRecordLoading,
+    importedListCount,
+    getEncodeList,
+    currentPage,
+    addLoadedPage,
+    pageLoaded
   } = props;
 
+  const [encodeListPaginationCount, setEncodeListPaginationCount] = useState(0);
   const [encodeListPagination, setEncodeListPagination] = useState<any>([]);
   const [encodeListCurrentPage, setEncodeListCurrentPage] = useState(0);
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
@@ -44,12 +50,6 @@ const MasterListView = (props: I_MasterListViewProps) => {
   const [searchPhrase, setSearchPhrase] = useState("");
 
   useEffect(() => {
-    setEncodeListPagination(
-      chunkArrayForPagination(
-        encodeListData.slice(0).reverse(),
-        encodeListPaginationDataCount
-      )
-    );
     const recordEncodeListIds = _.uniq(
       recordData.map((res) => {
         return res.encodeListId;
@@ -58,10 +58,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
     const encodeListIds = encodeListData.map((res) => {
       return res._id;
     });
-    if (
-      recordEncodeListIds.length > encodeListIds.length &&
-      !isRecordLoading
-    ) {
+    if (recordEncodeListIds.length > encodeListIds.length && !isRecordLoading) {
       const deletedEncodeList = recordEncodeListIds.filter(function (val) {
         return encodeListIds.indexOf(val) == -1;
       });
@@ -70,17 +67,81 @@ const MasterListView = (props: I_MasterListViewProps) => {
   }, [encodeListData, isRecordLoading]);
 
   useEffect(() => {
+    if(currentPage === "Master Lists" && encodeListData.length > 0) {
+      const bebebe = chunkArrayForPagination(
+        encodeListData,
+        encodeListPagination,
+        pageLoaded,
+        encodeListCurrentPage
+      )
+      setEncodeListPagination(
+        bebebe
+      );
+    }
+  }, [encodeListData]);
+
+  useEffect(() => {
+    // const sample = '{"createdAt": "2021-02-22T23:09:26.472+00:00"}'
+    // const urlVariables = `?limit=0&condition=${encodeURIComponent(sample)}`
+    // This variable is the query variables that is being pass to the api for condition
+    if(currentPage === "Master Lists" && encodeListData.length === 0) {
+      const urlVariables = `?limit=${encodeListPaginationDataCount}`;
+      const newPageNumber = 0;
+      getEncodeList(urlVariables, newPageNumber);
+    }
+  }, [currentPage]);
+
+  useEffect(() => {
+    const paginationCount =
+      importedListCount > 0 && importedListCount < 10
+        ? 1
+        : importedListCount > 0 && importedListCount > 10
+        ? importedListCount / encodeListPaginationDataCount
+        : 0;
+    setEncodeListPaginationCount(Math.ceil(paginationCount));
+  }, [importedListCount]);
+
+  useEffect(() => {
     setEncodeListCurrentPage(0);
     if (encodeListData.length > 0) {
       const searchResult = searchSpecific(searchPhrase);
-      setEncodeListPagination(
-        chunkArrayForPagination(
-          searchResult.slice(0).reverse(),
-          encodeListPaginationDataCount
-        )
-      );
+      // setEncodeListPagination(
+      //   chunkArrayForPagination(
+      //     searchResult.slice(0).reverse(),
+      //     encodeListPaginationDataCount
+      //   )
+      // );
     }
   }, [searchPhrase]);
+
+  const alterPagination = (isAddition: boolean, isLastPage: boolean, value: number) => {
+    if(!isLastPage) {
+      const add = encodeListCurrentPage + value;
+      const subtract = encodeListCurrentPage - value;
+      setEncodeListCurrentPage(isAddition ? add : subtract);
+
+      const actualPageNumber = add + 1;
+      const isPageLoaded = pageLoaded.includes(actualPageNumber);
+      const toSkip = encodeListData.length-1;
+      if(isAddition && !isPageLoaded) {
+        const urlVariables = `?limit=${encodeListPaginationDataCount}&skip=${toSkip}`;
+        const newPageNumber = add;
+        getEncodeList(urlVariables, newPageNumber);
+      }
+    } else {
+      setEncodeListCurrentPage(value);
+      const isPageLoaded = pageLoaded.includes(value);
+      if(isAddition && !isPageLoaded) {
+        console.log('sdasd')
+        const remainder = importedListCount % encodeListPaginationDataCount;
+        const toSkip = (importedListCount - remainder)-1;
+        const limit = remainder === 0 ? encodeListPaginationDataCount : remainder+1;
+        const urlVariables = `?limit=${limit}&skip=${toSkip}`;
+        const newPageNumber = value;
+        getEncodeList(urlVariables, newPageNumber);
+      }
+    }
+  }
 
   const searchSpecific = (value: string) => {
     return encodeListData
@@ -169,7 +230,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
   };
 
   const renderEncodeListTable = () => {
-    if (!isEncodeListLoading && encodeListPagination.length > 0) {
+    if (!isEncodeListLoading && encodeListPagination.length > 0 && !_.isNil(encodeListPagination[encodeListCurrentPage])) {
       return (
         <>
           <Table striped bordered hover>
@@ -221,24 +282,24 @@ const MasterListView = (props: I_MasterListViewProps) => {
                 <Pagination.First onClick={() => setEncodeListCurrentPage(0)} />
                 <Pagination.Prev
                   onClick={() =>
-                    setEncodeListCurrentPage(encodeListCurrentPage - 1)
+                    alterPagination(false, false, 1)
                   }
                 />
               </>
             ) : null}
             <h3 style={{ marginLeft: "10px", marginRight: "10px" }}>
-              {encodeListCurrentPage + 1} of {encodeListPagination.length}
+              {encodeListCurrentPage + 1} of {encodeListPaginationCount}
             </h3>
-            {encodeListCurrentPage + 1 < encodeListPagination.length ? (
+            {encodeListCurrentPage + 1 < encodeListPaginationCount ? (
               <>
                 <Pagination.Next
                   onClick={() =>
-                    setEncodeListCurrentPage(encodeListCurrentPage + 1)
+                    alterPagination(true, false, 1)
                   }
                 />
                 <Pagination.Last
                   onClick={() =>
-                    setEncodeListCurrentPage(encodeListPagination.length - 1)
+                    alterPagination(true, true, encodeListPaginationCount - 1)
                   }
                 />
               </>
@@ -246,9 +307,12 @@ const MasterListView = (props: I_MasterListViewProps) => {
           </Pagination>
         </>
       );
-    } else if (isEncodeListLoading && (encodeListPagination.length === 0 || encodeListPagination.length > 0)) {
+    } else if (
+      isEncodeListLoading &&
+      (encodeListPaginationCount === 0 || encodeListPaginationCount > 0)
+    ) {
       return <Spinner animation="grow" />;
-    } else if (!isEncodeListLoading && encodeListPagination.length === 0) {
+    } else if (!isEncodeListLoading && encodeListPaginationCount === 0) {
       return <h5 style={{ color: "gray" }}>No data found.</h5>;
     }
   };
@@ -286,12 +350,17 @@ const MasterListView = (props: I_MasterListViewProps) => {
 
 const mapStateToProps = (gState: I_GlobalState) => ({
   encodeListData: gState.encodeList.data,
+  currentPage: gState.navBar.currentPage,
   recordData: gState.record.data,
   isEncodeListLoading: gState.encodeList.isLoading,
-  isRecordLoading: gState.record.isLoading
+  isRecordLoading: gState.record.isLoading,
+  importedListCount: gState.dashboardCount.importedList,
+  pageLoaded: gState.encodeList.pageLoaded
 });
 
 export default connect(mapStateToProps, {
+  getEncodeList,
   bulkDeleteRecord,
   triggerModalTopAlert,
+  addLoadedPage
 })(MasterListView);
