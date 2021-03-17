@@ -48,7 +48,7 @@ export default function (state = initialState, action: I_ReduxAction) {
     case GET_ENCODE_LIST:
       return {
         ...state,
-        data: [...state.data, ...payload.dbRes],
+        data: _.uniqBy([...state.data, ...payload.dbRes], '_id'),
         isLoading: false
       };
     case PAGE_LOADED_ENCODE_LIST:

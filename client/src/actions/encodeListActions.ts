@@ -25,6 +25,7 @@ export const getEncodeList = (variables: string | undefined, pageNumber: number 
   axios
     .get(`/api/encodeList${variables}`)
     .then((res) => {
+      console.log('gegege', res.data)
       dispatch({
         type: GET_ENCODE_LIST,
         payload: res.data !== "" ? res.data : {},

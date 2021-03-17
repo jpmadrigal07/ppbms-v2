@@ -67,13 +67,12 @@ const MasterListView = (props: I_MasterListViewProps) => {
   }, [encodeListData, isRecordLoading]);
 
   useEffect(() => {
-    if(currentPage === "Master Lists" && encodeListData.length > 0) {
+    if(currentPage === "Master Lists" && encodeListData.length > 0 && searchPhrase === "") {
       const bebebe = chunkArrayForPagination(
         encodeListData,
         encodeListPagination,
-        pageLoaded,
         encodeListCurrentPage
-      )
+      );
       setEncodeListPagination(
         bebebe
       );
@@ -81,8 +80,6 @@ const MasterListView = (props: I_MasterListViewProps) => {
   }, [encodeListData]);
 
   useEffect(() => {
-    // const sample = '{"createdAt": "2021-02-22T23:09:26.472+00:00"}'
-    // const urlVariables = `?limit=0&condition=${encodeURIComponent(sample)}`
     // This variable is the query variables that is being pass to the api for condition
     if(currentPage === "Master Lists" && encodeListData.length === 0) {
       const urlVariables = `?limit=${encodeListPaginationDataCount}`;
@@ -103,8 +100,15 @@ const MasterListView = (props: I_MasterListViewProps) => {
 
   useEffect(() => {
     setEncodeListCurrentPage(0);
-    if (encodeListData.length > 0) {
-      const searchResult = searchSpecific(searchPhrase);
+    if (encodeListData.length > 0 && searchPhrase !== "" && searchPhrase.length === 10) {
+      const loadedEncodeListsIds = encodeListData.map((res: I_EncodeList) => res._id);
+      const dateSearch = moment(searchPhrase).format('YYYY-MM-DDTHH:mm:ss[Z]');
+      const dateSearchNextDay = moment(searchPhrase).add('days', 1).format('YYYY-MM-DDTHH:mm:ss[Z]');
+      const condition = `{"createdAt": {"$gte": "${dateSearch}", "$lt": "${dateSearchNextDay}"}, "_id": { "$nin": ${JSON.stringify(loadedEncodeListsIds)} } }`
+      const urlVariables = `?limit=0&condition=${encodeURIComponent(condition)}`
+      const newPageNumber = undefined;
+      getEncodeList(urlVariables, newPageNumber);
+      // const searchResult = searchSpecific(searchPhrase);
       // setEncodeListPagination(
       //   chunkArrayForPagination(
       //     searchResult.slice(0).reverse(),
@@ -122,7 +126,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
 
       const actualPageNumber = add + 1;
       const isPageLoaded = pageLoaded.includes(actualPageNumber);
-      const toSkip = encodeListData.length-1;
+      const toSkip = pageLoaded.length*encodeListPaginationDataCount;
       if(isAddition && !isPageLoaded) {
         const urlVariables = `?limit=${encodeListPaginationDataCount}&skip=${toSkip}`;
         const newPageNumber = add;
@@ -132,10 +136,9 @@ const MasterListView = (props: I_MasterListViewProps) => {
       setEncodeListCurrentPage(value);
       const isPageLoaded = pageLoaded.includes(value);
       if(isAddition && !isPageLoaded) {
-        console.log('sdasd')
         const remainder = importedListCount % encodeListPaginationDataCount;
-        const toSkip = (importedListCount - remainder)-1;
-        const limit = remainder === 0 ? encodeListPaginationDataCount : remainder+1;
+        const toSkip = importedListCount - remainder;
+        const limit = remainder === 0 ? encodeListPaginationDataCount : remainder;
         const urlVariables = `?limit=${limit}&skip=${toSkip}`;
         const newPageNumber = value;
         getEncodeList(urlVariables, newPageNumber);
@@ -276,6 +279,9 @@ const MasterListView = (props: I_MasterListViewProps) => {
               )}
             </tbody>
           </Table>
+
+        SIGURADUHING IPAPAKITA ANG IBANG ENCODELIST PARA SA SEARCH PAG NAG SEARCH ANG USER
+
           <Pagination>
             {encodeListCurrentPage > 0 ? (
               <>
