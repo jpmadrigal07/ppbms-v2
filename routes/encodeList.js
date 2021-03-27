@@ -8,51 +8,146 @@ const moment = require("moment");
 // @desc    Get All encodeList
 // @access  Public
 router.get("/", async (req, res) => {
-    const condition = !_.isNil(req.query.condition) ? JSON.parse(req.query.condition) : {};
+    const condition = !_.isNil(req.query.condition) ?
+        JSON.parse(req.query.condition) :
+        {};
     const limit = !_.isNil(req.query.limit) ? JSON.parse(req.query.limit) : 0;
     const skip = !_.isNil(req.query.skip) ? JSON.parse(req.query.skip) : 0;
     if (_.isNil(condition.deletedAt)) {
         condition.deletedAt = {
-            $exists: false
-        }
+            $exists: false,
+        };
     }
     try {
-        const getAllEncodeList = await EncodeList.find(condition).skip(skip).limit(limit);
+        const encodeListIds = await EncodeList.find(condition, {_id: 1})
+            .skip(skip)
+            .limit(limit);
+        const removeObjEncodeListIds = encodeListIds.map((res) => {
+            return res._id
+        })
+        const getAllEncodeList = await EncodeList.aggregate([{
+                $match: {
+                    _id: {
+                        $in: removeObjEncodeListIds
+                    },
+                },
+            },
+            {
+                $lookup: {
+                    from: "records",
+                    let: {
+                        id: "$_id"
+                    },
+                    pipeline: [{
+                        $match: {
+                            deletedAt: {
+                                $exists: false
+                            },
+                            messengerId: {
+                                $exists: false
+                            },
+                            $expr: {
+                                $eq: ["$encodeListId", "$$id"],
+                            },
+                        },
+                    }, ],
+                    as: "unAssignedRecord",
+                },
+            },
+            {
+                $lookup: {
+                    from: "records",
+                    let: {
+                        id: "$_id"
+                    },
+                    pipeline: [{
+                        $match: {
+                            deletedAt: {
+                                $exists: false
+                            },
+                            messengerId: {
+                                $exists: true
+                            },
+                            $expr: {
+                                $eq: ["$encodeListId", "$$id"],
+                            },
+                        },
+                    }, ],
+                    as: "assignedRecord",
+                },
+            },
+            {
+                $lookup: {
+                    from: "records",
+                    let: {
+                        id: "$_id"
+                    },
+                    pipeline: [{
+                        $match: {
+                            deletedAt: {
+                                $exists: false
+                            },
+                            $expr: {
+                                $eq: ["$encodeListId", "$$id"],
+                            },
+                        },
+                    }, ],
+                    as: "record",
+                },
+            },
+            {
+                $addFields: {
+                    recordCount: {
+                        $size: "$record"
+                    },
+                    assignedRecordCount: {
+                        $size: "$assignedRecord"
+                    },
+                    unAssignedRecordCount: {
+                        $size: "$unAssignedRecord"
+                    },
+                },
+            },
+            {
+                $unset: ["record", "assignedRecord", "unAssignedRecord"]
+            },
+        ]);
         res.json({
             dbRes: getAllEncodeList,
-            isSuccess: true
+            isSuccess: true,
         });
     } catch (error) {
         res.json({
             dbRes: error.message,
-            isSuccess: false
+            isSuccess: false,
         });
     }
 });
-
-// GAWIN ANG PAG KUHA NG BAGONG NEXT 10 DATA SA DATABASE PAG PININDUT ANG NEXT SA PAGINATION
-// MAG GAWA NG BAGONG STATE PARA SA CURRENT PAGE DATA BUKOD PA ANG GLOBAL STATE NG ENCODE LIST
 
 // @route   GET api/user
 // @desc    Get All encodeList
 // @access  Public
 router.get("/count", async (req, res) => {
-    const condition = !_.isNil(req.query.condition) ? JSON.parse(req.query.condition) : {};
+    const condition = !_.isNil(req.query.condition) ?
+        JSON.parse(req.query.condition) :
+        {};
     if (_.isNil(condition.deletedAt)) {
         condition.deletedAt = {
-            $exists: false
-        }
+            $exists: false,
+        };
     }
     try {
-        const getAllEncodeList = await EncodeList.find(condition).estimatedDocumentCount();
+        const getAllEncodeList = await EncodeList.find(
+            condition
+        ).estimatedDocumentCount();
         res.json({
             dbRes: getAllEncodeList,
-            isSuccess: true
+            isSuccess: true,
         });
     } catch (error) {
         res.json({
             dbRes: err,
-            isSuccess: false
+            isSuccess: false,
         });
     }
 });
@@ -65,17 +160,17 @@ router.get("/:id", async (req, res) => {
         const getEncodeList = await EncodeList.findById({
             _id: req.params.id,
             deletedAt: {
-              $exists: false
-            }
+                $exists: false,
+            },
         });
         res.json({
             dbRes: getEncodeList,
-            isSuccess: true
+            isSuccess: true,
         });
     } catch (error) {
         res.json({
             dbRes: err,
-            isSuccess: false
+            isSuccess: false,
         });
     }
 });
@@ -87,38 +182,38 @@ router.post("/", async (req, res) => {
     const fileName = req.body.fileName;
     if (!_.isNil(fileName) && fileName !== "") {
         const newEncodeList = new EncodeList({
-            fileName
+            fileName,
         });
 
         try {
             const getEncodeList = await EncodeList.find({
                 fileName,
                 deletedAt: {
-                  $exists: false
-                }
+                    $exists: false,
+                },
             });
             if (getEncodeList.length === 0) {
                 const createEncodeList = await newEncodeList.save();
                 res.json({
                     dbRes: createEncodeList,
-                    isSuccess: true
+                    isSuccess: true,
                 });
             } else {
                 res.json({
                     dbRes: "Encode list filename must be unique",
-                    isSuccess: false
+                    isSuccess: false,
                 });
             }
         } catch (err) {
             res.json({
                 dbRes: err,
-                isSuccess: false
+                isSuccess: false,
             });
         }
     } else {
         res.json({
             dbRes: "Required values are either invalid or empty",
-            isSuccess: false
+            isSuccess: false,
         });
     }
 });
@@ -133,36 +228,38 @@ router.put("/:id", async (req, res) => {
             const getEncodeList = await EncodeList.find({
                 fileName,
                 deletedAt: {
-                  $exists: false
-                }
+                    $exists: false,
+                },
             });
             if (getEncodeList.length === 0) {
-                const updateEncodeList = await EncodeList.findByIdAndUpdate(req.params.id, {
-                    $set: {
-                        fileName,
-                        updatedAt: Date.now(),
-                    },
-                });
+                const updateEncodeList = await EncodeList.findByIdAndUpdate(
+                    req.params.id, {
+                        $set: {
+                            fileName,
+                            updatedAt: Date.now(),
+                        },
+                    }
+                );
                 res.json({
                     dbRes: updateEncodeList,
-                    isSuccess: true
+                    isSuccess: true,
                 });
             } else {
                 res.json({
                     dbRes: "Encode list file name must be unique.",
-                    isSuccess: false
+                    isSuccess: false,
                 });
             }
         } catch (error) {
             res.json({
                 dbRes: err,
-                isSuccess: false
+                isSuccess: false,
             });
         }
     } else {
         res.json({
             dbRes: "Required values are either invalid or empty.",
-            isSuccess: false
+            isSuccess: false,
         });
     }
 });
@@ -179,34 +276,36 @@ router.patch("/:id", async (req, res) => {
             const getEncodeList = await EncodeList.find({
                 fileName,
                 deletedAt: {
-                  $exists: false
-                }
+                    $exists: false,
+                },
             });
             if (getEncodeList.length === 0) {
-                const updateEncodeList = await EncodeList.findByIdAndUpdate(req.params.id, {
-                    $set: toUpdate,
-                    updatedAt: Date.now(),
-                });
+                const updateEncodeList = await EncodeList.findByIdAndUpdate(
+                    req.params.id, {
+                        $set: toUpdate,
+                        updatedAt: Date.now(),
+                    }
+                );
                 res.json({
                     dbRes: updateEncodeList,
-                    isSuccess: true
+                    isSuccess: true,
                 });
             } else {
                 res.json({
                     dbRes: "Encode list filename must be unique.",
-                    isSuccess: false
+                    isSuccess: false,
                 });
             }
         } catch (error) {
             res.json({
                 dbRes: err,
-                isSuccess: false
+                isSuccess: false,
             });
         }
     } else {
         res.json({
             dbRes: "Required values are either invalid or empty.",
-            isSuccess: false
+            isSuccess: false,
         });
     }
 });
@@ -219,29 +318,31 @@ router.delete("/:id", async (req, res) => {
         const getEncodeList = await EncodeList.find({
             _id: req.params.id,
             deletedAt: {
-                $exists: false
-            }
+                $exists: false,
+            },
         });
         if (getEncodeList.length > 0) {
-            const deleteEncodeList = await EncodeList.findByIdAndUpdate(req.params.id, {
-                $set: {
-                    deletedAt: Date.now(),
-                },
-            });
+            const deleteEncodeList = await EncodeList.findByIdAndUpdate(
+                req.params.id, {
+                    $set: {
+                        deletedAt: Date.now(),
+                    },
+                }
+            );
             res.json({
                 dbRes: deleteEncodeList,
-                isSuccess: true
+                isSuccess: true,
             });
         } else {
             res.json({
                 dbRes: "Encode list is already deleted.",
-                isSuccess: false
+                isSuccess: false,
             });
         }
     } catch (error) {
         res.json({
             dbRes: error,
-            isSuccess: false
+            isSuccess: false,
         });
     }
 });

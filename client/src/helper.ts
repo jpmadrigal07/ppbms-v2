@@ -1,38 +1,74 @@
 import { map } from "lodash";
 import { encodeListPaginationDataCount } from "./constant";
 import _ from "lodash";
+import { I_EncodeList } from "./interfaces";
+import moment from "moment";
 
 export const chunkArrayForPagination = (
   updatedData: any,
   currentPaginationData: any,
-  currentPageNumber: number
+  lastPageNumber: number | undefined,
+  currentPageNumber: number,
+  currentPageNumberIndex: number
 ) => {
   const currentPaginationCount = currentPaginationData.length;
-  if(currentPaginationCount !== 0) {
-    const toSkipData = (currentPaginationCount * encodeListPaginationDataCount)-1;
+  const updateDataPageCount =
+    updatedData.length / encodeListPaginationDataCount;
+  const lastPageNumberG = !_.isNil(lastPageNumber) ? lastPageNumber : 0;
+  const toSkipM = currentPageNumberIndex > 1 ? currentPageNumberIndex : 1;
+  if (currentPaginationCount !== 0) {
+    const toSkipData =
+      currentPageNumber > lastPageNumberG
+        ? currentPaginationCount * encodeListPaginationDataCount - 1
+        : toSkipM * encodeListPaginationDataCount - 1;
+
+    console.log('baby 1', toSkipData);
+    console.log('baby 2', currentPageNumberIndex);
     const newData = [...currentPaginationData];
-    const sortedUpdatedData = _.sortBy(updatedData, ["createdAt"]);
     newData.push({
       pageNumber: currentPageNumber,
-      data: sortedUpdatedData
+      data: updatedData
         .map((encodeList: any, i: number) => {
           if (i > toSkipData) {
-            const limit = (i - toSkipData);
-            if(limit <= encodeListPaginationDataCount) {
-              console.log('limit', limit)
+            const limit = i - toSkipData;
+            if (limit <= encodeListPaginationDataCount) {
               return encodeList;
             }
           }
         })
-        .filter((res: any) => !_.isNil(res))
+        .filter((res: any) => !_.isNil(res)),
     });
     return newData;
   } else {
-    const newData = [...currentPaginationData]
+    const newData = [...currentPaginationData];
     newData.push({
       pageNumber: currentPageNumber,
-      data: updatedData
+      data: updatedData,
     });
     return newData;
   }
+};
+
+export const chunkArrayForSearchPagination = (
+  encodeListData: any,
+  size: number,
+  searchPhrase: string
+) => {
+  const array = encodeListData
+    .map((encodeListData: I_EncodeList) => {
+      const createdAt = moment(encodeListData.createdAt).format("MM/DD/YYYY");
+      const result = createdAt.includes(searchPhrase);
+      return result ? encodeListData : null;
+    })
+    .filter((encodeListData: I_EncodeList) => !_.isNil(encodeListData));
+  const chunked_arr = [];
+  let index = 0;
+  while (index < array.length) {
+    chunked_arr.push({
+      pageNumber: index,
+      data: array.slice(index, size + index),
+    });
+    index += size;
+  }
+  return chunked_arr;
 };

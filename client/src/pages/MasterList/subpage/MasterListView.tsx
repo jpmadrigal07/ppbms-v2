@@ -4,13 +4,12 @@ import { Table, Spinner, Pagination, Form } from "react-bootstrap";
 import {
   I_MasterListViewProps,
   I_GlobalState,
-  I_EncodeList,
-  I_Record,
+  I_EncodeList
 } from "../../../interfaces";
 import "../MasterList.scss";
 import { bulkDeleteRecord } from "../../../actions/recordActions";
-import { getEncodeList, addLoadedPage } from "../../../actions/encodeListActions";
-import { chunkArrayForPagination } from "../../../helper";
+import { getEncodeList } from "../../../actions/encodeListActions";
+import { chunkArrayForPagination, chunkArrayForSearchPagination } from "../../../helper";
 import { encodeListPaginationDataCount } from "../../../constant";
 import { triggerModalTopAlert } from "../../../actions/modalTopAlertActions";
 import RecordModal from "../modal/RecordModal";
@@ -29,13 +28,14 @@ const MasterListView = (props: I_MasterListViewProps) => {
     importedListCount,
     getEncodeList,
     currentPage,
-    addLoadedPage,
     pageLoaded
   } = props;
 
   const [encodeListPaginationCount, setEncodeListPaginationCount] = useState(0);
   const [encodeListPagination, setEncodeListPagination] = useState<any>([]);
+  const [encodeListSearchPagination, setEncodeListSearchPagination] = useState<any>([]);
   const [encodeListCurrentPage, setEncodeListCurrentPage] = useState(0);
+  const [encodeListSearchCurrentPage, setEncodeListSearchCurrentPage] = useState(0);
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("Record");
   const [selectedEncodeListId, setSelectedEncodeListId] = useState("");
@@ -67,17 +67,28 @@ const MasterListView = (props: I_MasterListViewProps) => {
   }, [encodeListData, isRecordLoading]);
 
   useEffect(() => {
-    if(currentPage === "Master Lists" && encodeListData.length > 0 && searchPhrase === "") {
+    const pageLoadedLoading = pageLoaded.includes(encodeListCurrentPage)
+    if(currentPage === "Master Lists" && encodeListData.length > 0 && searchPhrase === "" && !isEncodeListLoading && pageLoadedLoading) {
       const bebebe = chunkArrayForPagination(
         encodeListData,
         encodeListPagination,
-        encodeListCurrentPage
+        pageLoaded.slice(-1).pop(),
+        encodeListCurrentPage,
+        pageLoaded.findIndex((res: number) => res === encodeListCurrentPage)
       );
       setEncodeListPagination(
         bebebe
       );
+    } else if(currentPage === "Master Lists" && encodeListData.length > 0 && searchPhrase !== "" && !isEncodeListLoading) {
+      setEncodeListSearchPagination(
+        chunkArrayForSearchPagination(
+          encodeListData,
+          encodeListPaginationDataCount,
+          searchPhrase
+        )
+      );
     }
-  }, [encodeListData]);
+  }, [encodeListData, pageLoaded]);
 
   useEffect(() => {
     // This variable is the query variables that is being pass to the api for condition
@@ -103,18 +114,11 @@ const MasterListView = (props: I_MasterListViewProps) => {
     if (encodeListData.length > 0 && searchPhrase !== "" && searchPhrase.length === 10) {
       const loadedEncodeListsIds = encodeListData.map((res: I_EncodeList) => res._id);
       const dateSearch = moment(searchPhrase).format('YYYY-MM-DDTHH:mm:ss[Z]');
-      const dateSearchNextDay = moment(searchPhrase).add('days', 1).format('YYYY-MM-DDTHH:mm:ss[Z]');
+      const dateSearchNextDay = moment(searchPhrase).add(1, 'days').format('YYYY-MM-DDTHH:mm:ss[Z]');
       const condition = `{"createdAt": {"$gte": "${dateSearch}", "$lt": "${dateSearchNextDay}"}, "_id": { "$nin": ${JSON.stringify(loadedEncodeListsIds)} } }`
       const urlVariables = `?limit=0&condition=${encodeURIComponent(condition)}`
       const newPageNumber = undefined;
       getEncodeList(urlVariables, newPageNumber);
-      // const searchResult = searchSpecific(searchPhrase);
-      // setEncodeListPagination(
-      //   chunkArrayForPagination(
-      //     searchResult.slice(0).reverse(),
-      //     encodeListPaginationDataCount
-      //   )
-      // );
     }
   }, [searchPhrase]);
 
@@ -122,40 +126,32 @@ const MasterListView = (props: I_MasterListViewProps) => {
     if(!isLastPage) {
       const add = encodeListCurrentPage + value;
       const subtract = encodeListCurrentPage - value;
-      setEncodeListCurrentPage(isAddition ? add : subtract);
+      const alterPageNumberBy = isAddition ? add : subtract;
+      setEncodeListCurrentPage(alterPageNumberBy);
 
-      const actualPageNumber = add + 1;
+      const actualPageNumber = alterPageNumberBy;
       const isPageLoaded = pageLoaded.includes(actualPageNumber);
-      const toSkip = pageLoaded.length*encodeListPaginationDataCount;
-      if(isAddition && !isPageLoaded) {
+      // MALI TONG TO SKIP PLEASE FIX THIS KAILANGAN I CONSIDER AND SUBTRACTION OF PAGE
+      const toSkip = actualPageNumber*encodeListPaginationDataCount;
+      console.log('feel', toSkip)
+      if(!isPageLoaded) {
         const urlVariables = `?limit=${encodeListPaginationDataCount}&skip=${toSkip}`;
-        const newPageNumber = add;
-        getEncodeList(urlVariables, newPageNumber);
+        const newPageNumber = actualPageNumber;
+        getEncodeList(urlVariables, newPageNumber, toSkip);
       }
     } else {
       setEncodeListCurrentPage(value);
       const isPageLoaded = pageLoaded.includes(value);
-      if(isAddition && !isPageLoaded) {
+      if(!isPageLoaded) {
         const remainder = importedListCount % encodeListPaginationDataCount;
         const toSkip = importedListCount - remainder;
         const limit = remainder === 0 ? encodeListPaginationDataCount : remainder;
         const urlVariables = `?limit=${limit}&skip=${toSkip}`;
         const newPageNumber = value;
-        getEncodeList(urlVariables, newPageNumber);
+        getEncodeList(urlVariables, newPageNumber, toSkip);
       }
     }
   }
-
-  const searchSpecific = (value: string) => {
-    return encodeListData
-      .map((res) => {
-        const createdAt = moment(res.createdAt).format("MM/DD/YYYY");
-        const result = createdAt.includes(value);
-        const isIncluded = result ? res : null;
-        return value === "" ? res : isIncluded;
-      })
-      .filter((res) => !_.isNil(res));
-  };
 
   const renderEncodeLists = (
     id: string,
@@ -233,7 +229,16 @@ const MasterListView = (props: I_MasterListViewProps) => {
   };
 
   const renderEncodeListTable = () => {
-    if (!isEncodeListLoading && encodeListPagination.length > 0 && !_.isNil(encodeListPagination[encodeListCurrentPage])) {
+    const isPageExist = encodeListPagination.filter((pagination: any) => {
+      return pagination.pageNumber === encodeListCurrentPage;
+    }).length > 0;
+
+    const isSearchPageExist = encodeListSearchPagination.filter((pagination: any) => {
+      return pagination.pageNumber === encodeListSearchCurrentPage;
+    }).length > 0;
+
+    if (!isEncodeListLoading && encodeListPagination.length > 0 && isPageExist && searchPhrase === "" && searchPhrase.length === 0) {
+      const pageIndex = encodeListPagination.findIndex((pagination: any) => pagination.pageNumber === encodeListCurrentPage);
       return (
         <>
           <Table striped bordered hover>
@@ -249,38 +254,21 @@ const MasterListView = (props: I_MasterListViewProps) => {
               </tr>
             </thead>
             <tbody>
-              {encodeListPagination[encodeListCurrentPage].data.map(
+              {encodeListPagination[pageIndex].data.map(
                 (encodeList: I_EncodeList, index: number) => {
-                  const record = recordData.filter(
-                    (rec) => rec.encodeListId === encodeList._id
-                  );
-                  const assigned = record.filter(
-                    (rec) =>
-                      rec.encodeListId === encodeList._id &&
-                      !_.isNil(rec.messengerId) &&
-                      _.isNil(rec.deletedAt)
-                  );
-                  const unAssigned = record.filter(
-                    (rec) =>
-                      rec.encodeListId === encodeList._id &&
-                      _.isNil(rec.messengerId) &&
-                      _.isNil(rec.deletedAt)
-                  );
                   return renderEncodeLists(
                     encodeList._id,
                     encodeList.fileName,
                     encodeList.createdAt,
-                    assigned.length,
-                    unAssigned.length,
-                    record.length,
+                    encodeList.assignedRecordCount,
+                    encodeList.unAssignedRecordCount,
+                    encodeList.recordCount,
                     index
                   );
                 }
               )}
             </tbody>
           </Table>
-
-        SIGURADUHING IPAPAKITA ANG IBANG ENCODELIST PARA SA SEARCH PAG NAG SEARCH ANG USER
 
           <Pagination>
             {encodeListCurrentPage > 0 ? (
@@ -313,12 +301,90 @@ const MasterListView = (props: I_MasterListViewProps) => {
           </Pagination>
         </>
       );
+    } else if (!isEncodeListLoading && encodeListSearchPagination.length > 0 && isSearchPageExist && searchPhrase !== "" && searchPhrase.length > 9) {
+      return (
+        <>
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>File Name</th>
+                <th>Date Imported</th>
+                <th>Assigned Count</th>
+                <th>Unassigned Count</th>
+                <th>Total Count</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {encodeListSearchPagination[encodeListSearchCurrentPage].data.map(
+                (encodeList: I_EncodeList, index: number) => {
+                  const record = recordData.filter(
+                    (rec) => rec.encodeListId === encodeList._id
+                  );
+                  const assigned = record.filter(
+                    (rec) =>
+                      rec.encodeListId === encodeList._id &&
+                      !_.isNil(rec.messengerId) &&
+                      _.isNil(rec.deletedAt)
+                  );
+                  const unAssigned = record.filter(
+                    (rec) =>
+                      rec.encodeListId === encodeList._id &&
+                      _.isNil(rec.messengerId) &&
+                      _.isNil(rec.deletedAt)
+                  );
+                  return renderEncodeLists(
+                    encodeList._id,
+                    encodeList.fileName,
+                    encodeList.createdAt,
+                    assigned.length,
+                    unAssigned.length,
+                    record.length,
+                    index
+                  );
+                }
+              )}
+            </tbody>
+          </Table>
+
+          <Pagination>
+            {encodeListSearchCurrentPage > 0 ? (
+              <>
+                <Pagination.First onClick={() => setEncodeListSearchCurrentPage(0)} />
+                <Pagination.Prev
+                  // onClick={() =>
+                    // alterPagination(false, false, 1)
+                  // }
+                />
+              </>
+            ) : null}
+            <h3 style={{ marginLeft: "10px", marginRight: "10px" }}>
+              {encodeListSearchCurrentPage + 1} of {encodeListSearchPagination.length}
+            </h3>
+            {encodeListSearchCurrentPage + 1 < encodeListSearchPagination.length ? (
+              <>
+                <Pagination.Next
+                  // onClick={() =>
+                    // alterPagination(true, false, 1)
+                  // }
+                />
+                <Pagination.Last
+                  // onClick={() =>
+                    // alterPagination(true, true, encodeListSearchPagination.length - 1)
+                  // }
+                />
+              </>
+            ) : null}
+          </Pagination>
+        </>
+      );
     } else if (
-      isEncodeListLoading &&
-      (encodeListPaginationCount === 0 || encodeListPaginationCount > 0)
+      (isEncodeListLoading &&
+      (encodeListPaginationCount === 0 || encodeListPaginationCount > 0)) || (searchPhrase.length > 0 && searchPhrase.length < 10)
     ) {
       return <Spinner animation="grow" />;
-    } else if (!isEncodeListLoading && encodeListPaginationCount === 0) {
+    } else if ((!isEncodeListLoading || encodeListPagination.length > 0) || (!isEncodeListLoading|| encodeListSearchPagination.length > 0)) {
       return <h5 style={{ color: "gray" }}>No data found.</h5>;
     }
   };
@@ -329,6 +395,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
         <Form.Control
           className="form-control"
           placeholder="Search by Date Imported (MM/DD/YYYY)"
+          autoComplete="off"
           disabled={isEncodeListLoading}
           onChange={(e) => setSearchPhrase(e.target.value)}
         />
@@ -367,6 +434,5 @@ const mapStateToProps = (gState: I_GlobalState) => ({
 export default connect(mapStateToProps, {
   getEncodeList,
   bulkDeleteRecord,
-  triggerModalTopAlert,
-  addLoadedPage
+  triggerModalTopAlert
 })(MasterListView);

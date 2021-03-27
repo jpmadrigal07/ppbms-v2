@@ -122,6 +122,9 @@ export interface I_DispatchControlMessenger {
 export interface I_EncodeList {
     _id: string,
     fileName: string,
+    recordCount: number,
+    assignedRecordCount: number,
+    unAssignedRecordCount: number,
     deletedAt: string,
     createdAt: sting
 }
@@ -304,7 +307,6 @@ export interface I_MasterListViewProps {
     importedListCount: number,
     getEncodeList: Function,
     currentPage: string,
-    addLoadedPage: Function,
     pageLoaded: number[]
 }
 

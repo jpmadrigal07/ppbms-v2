@@ -8,33 +8,37 @@ import {
   ADD_DASHBOARD_COUNT,
   PAGE_LOADED_ENCODE_LIST,
   TOP_ALERT,
+  GET_ENCODE_LIST_COUNT,
+  GET_ENCODE_LIST_RECORD_COUNT
 } from "./types";
 import _ from "lodash";
 
 export const addLoadedPage = (pageNumber: number) => (dispatch: Function) => {
   dispatch(setEncodeListLoader("list", true));
-  console.log('mylove', pageNumber)
   dispatch({
     type: PAGE_LOADED_ENCODE_LIST,
     payload: pageNumber
   });
 };
 
-export const getEncodeList = (variables: string | undefined, pageNumber: number | undefined) => (dispatch: Function) => {
+export const getEncodeList = (variables: string | undefined, pageNumber: number | undefined, toSkip: number) => (dispatch: Function) => {
   dispatch(setEncodeListLoader("list", true));
   axios
     .get(`/api/encodeList${variables}`)
     .then((res) => {
-      console.log('gegege', res.data)
       dispatch({
         type: GET_ENCODE_LIST,
         payload: res.data !== "" ? res.data : {},
       });
       if(!_.isNil(pageNumber)) {
-        dispatch({
-          type: PAGE_LOADED_ENCODE_LIST,
-          payload: pageNumber
-        });
+        const dbRes = res.data.dbRes;
+        const isDbResArray = _.isArray(dbRes);
+        if(isDbResArray && dbRes.length > 0) {
+          dispatch({
+            type: PAGE_LOADED_ENCODE_LIST,
+            payload: pageNumber
+          });
+        }
       }
     })
     .catch((err) => {

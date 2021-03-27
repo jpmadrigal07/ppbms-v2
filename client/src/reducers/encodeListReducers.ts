@@ -4,7 +4,8 @@ import {
   GET_ENCODE_LIST,
   DELETE_ENCODE_LIST,
   ENCODE_LIST_LOADER,
-  PAGE_LOADED_ENCODE_LIST
+  PAGE_LOADED_ENCODE_LIST,
+  GET_ENCODE_LIST_RECORD_COUNT
 } from "../actions/types";
 import { I_ReduxAction, I_EncodeList } from "../interfaces";
 import _ from "lodash";
@@ -14,6 +15,7 @@ const initialState = {
   isUpdateLoading: false,
   isAddLoading: false,
   isDeleteLoading: false,
+  isRecordCountLoading: false,
   pageLoaded: [],
   data: []
 };
@@ -44,18 +46,35 @@ export default function (state = initialState, action: I_ReduxAction) {
           payload.type === "add" ? payload.isLoading : state.isAddLoading,
         isDeleteLoading:
           payload.type === "delete" ? payload.isLoading : state.isDeleteLoading,
+        isRecordCountLoading:
+          payload.type === "recordCount" ? payload.isLoading : state.isRecordCountLoading,
       };
     case GET_ENCODE_LIST:
       return {
         ...state,
-        data: _.uniqBy([...state.data, ...payload.dbRes], '_id'),
+        data: _.sortBy(_.uniqBy([...state.data, ...payload.dbRes], '_id'), ['createdAt']),
         isLoading: false
       };
     case PAGE_LOADED_ENCODE_LIST:
       return {
         ...state,
-        pageLoaded: [...state.pageLoaded, payload],
+        pageLoaded: _.sortBy([...state.pageLoaded, payload]),
         isLoading: false
+      };
+    case GET_ENCODE_LIST_RECORD_COUNT:
+      return {
+        ...state,
+        data: state.data.map((res: I_EncodeList) => {
+          if(res._id === payload.dbRes.encodeListId) {
+            res.recordCount = payload.dbRes.recordCount;
+            res.assignedRecordCount = payload.dbRes.assignedRecordCount;
+            res.unAssignedRecordCount = payload.dbRes.unAssignedRecordCount;
+            return res
+          } else {
+            return res
+          }
+        }),
+        isRecordCountLoading: false
       };
     case DELETE_ENCODE_LIST:
       return {
