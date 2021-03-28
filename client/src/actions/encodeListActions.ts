@@ -21,7 +21,7 @@ export const addLoadedPage = (pageNumber: number) => (dispatch: Function) => {
   });
 };
 
-export const getEncodeList = (variables: string | undefined, pageNumber: number | undefined, toSkip: number) => (dispatch: Function) => {
+export const getEncodeList = (variables: string | undefined, pageNumber: number | undefined) => (dispatch: Function) => {
   dispatch(setEncodeListLoader("list", true));
   axios
     .get(`/api/encodeList${variables}`)

@@ -315,9 +315,11 @@ export interface I_RecordModal {
     isRecordModalOpen: boolean,
     modalTitle: string,
     setIsRecordModalOpen: Function,
+    isRecordDataLoading: boolean,
     recordData: I_Record[],
     listToShow: string,
-    triggerModalTopAlert: Function
+    triggerModalTopAlert: Function,
+    getRecord: Function
 }
 
 export interface I_DeleteEncodeListModal {

@@ -56,7 +56,7 @@ export default function (state = initialState, action: I_ReduxAction) {
       return {
         ...state,
         isLoading: false,
-        data: payload.dbRes,
+        data: [...state.data, ...payload.dbRes],
       };
     case DELETE_RECORD:
       return {

@@ -23,6 +23,7 @@ router.get("/", async (req, res) => {
       $exists: false,
     };
   }
+
   try {
     const getAllRecord = await Record.find(condition);
     res.json({

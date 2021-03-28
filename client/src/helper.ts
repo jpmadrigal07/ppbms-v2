@@ -4,7 +4,7 @@ import _ from "lodash";
 import { I_EncodeList } from "./interfaces";
 import moment from "moment";
 
-export const chunkArrayForPagination = (
+export const bigDataChunkArrayForPagination = (
   updatedData: any,
   currentPaginationData: any,
   lastPageNumber: number | undefined,
@@ -12,8 +12,6 @@ export const chunkArrayForPagination = (
   currentPageNumberIndex: number
 ) => {
   const currentPaginationCount = currentPaginationData.length;
-  const updateDataPageCount =
-    updatedData.length / encodeListPaginationDataCount;
   const lastPageNumberG = !_.isNil(lastPageNumber) ? lastPageNumber : 0;
   const toSkipM = currentPageNumberIndex > 1 ? currentPageNumberIndex : 1;
   if (currentPaginationCount !== 0) {
@@ -21,9 +19,6 @@ export const chunkArrayForPagination = (
       currentPageNumber > lastPageNumberG
         ? currentPaginationCount * encodeListPaginationDataCount - 1
         : toSkipM * encodeListPaginationDataCount - 1;
-
-    console.log('baby 1', toSkipData);
-    console.log('baby 2', currentPageNumberIndex);
     const newData = [...currentPaginationData];
     newData.push({
       pageNumber: currentPageNumber,
@@ -72,3 +67,20 @@ export const chunkArrayForSearchPagination = (
   }
   return chunked_arr;
 };
+
+export const smallDataChunkArrayForPagination = (
+  encodeListData: any,
+  size: number
+) => {
+  const chunked_arr = [];
+  let index = 0;
+  while (index < encodeListData.length) {
+    chunked_arr.push({
+      pageNumber: index,
+      data: encodeListData.slice(index, size + index),
+    });
+    index += size;
+  }
+  return chunked_arr;
+};
+

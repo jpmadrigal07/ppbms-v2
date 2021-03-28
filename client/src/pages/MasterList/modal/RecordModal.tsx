@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { Modal, Button, Table, Pagination, Form } from "react-bootstrap";
+import { Modal, Button, Table, Pagination, Form, Spinner } from "react-bootstrap";
 import { I_GlobalState, I_RecordModal, I_Record } from "../../../interfaces";
 import { triggerModalTopAlert } from "../../../actions/modalTopAlertActions";
+import { getRecord } from "../../../actions/recordActions";
 import ModalTopAlert from "../../../components/Alert/ModalTopAlert";
 import { recordPaginationDataCount } from "../../../constant";
-import { chunkArrayForPagination } from "../../../helper";
+import { smallDataChunkArrayForPagination } from "../../../helper";
 import UpdateRecordModal from "../modal/UpdateRecordModal";
 import DeleteRecordModal from "../modal/DeleteRecordModal";
 import _ from "lodash";
@@ -19,6 +20,8 @@ const RecordModal = (props: I_RecordModal) => {
     isRecordModalOpen,
     setIsRecordModalOpen,
     triggerModalTopAlert,
+    isRecordDataLoading,
+    getRecord,
     listToShow,
     recordData,
   } = props;
@@ -35,39 +38,46 @@ const RecordModal = (props: I_RecordModal) => {
   const [isUpdateRecordModalOpen, setIsUpdateRecordModalOpen] = useState(false);
 
   useEffect(() => {
-    if (recordData.length > 0) {
-      if (listToShow === "all") {
-        setSelectedRecordData(
-          recordData.filter((res) => res.encodeListId === selectedEncodeListId)
-        );
-      } else if (listToShow === "unassigned") {
-        setSelectedRecordData(
-          recordData.filter(
-            (res) =>
-              res.encodeListId === selectedEncodeListId &&
-              _.isNil(res.messengerId)
-          )
-        );
-      }
+    const isRecordsExist = recordData.find((res) => res.encodeListId === selectedEncodeListId);
+    if (isRecordModalOpen && !_.isNil(selectedEncodeListId) && _.isNil(isRecordsExist)) {
+      const condition = `{"encodeListId": "${selectedEncodeListId}"}`;
+      const urlVariables = `?condition=${encodeURIComponent(condition)}`;
+      getRecord(urlVariables);
+    } else {
+      setRecordPagination([])
     }
-  }, [recordData, isRecordModalOpen]);
+  }, [isRecordModalOpen]);
+
+  useEffect(() => {
+    if (recordData.length > 0 && !isRecordDataLoading) {
+      setSelectedRecordData(
+        recordData.filter((res) => res.encodeListId === selectedEncodeListId)
+      );
+    }
+  }, [recordData]);
 
   useEffect(() => {
     if (
       isRecordModalOpen &&
       selectedRecordData.length > 0 &&
+      !isRecordDataLoading &&
       searchPhrase === ""
     ) {
-      // setRecordPagination(
-      //   chunkArrayForPagination(
-      //     selectedRecordData.slice(0).reverse(),
-      //     recordPaginationDataCount
-      //   )
-      // );
+      const reversedSelectedRecordData = selectedRecordData.slice(0).reverse();
+      const recordDataUnAssigned = reversedSelectedRecordData.map((res) => {
+        return _.isNil(res.messengerId) && _.isNil(res.deletedAt) ? res : null
+      }).filter((res) => !_.isNil(res))
+      const recordDataPagination = listToShow === "all" ? reversedSelectedRecordData : recordDataUnAssigned;
+      setRecordPagination(
+        smallDataChunkArrayForPagination(
+          recordDataPagination,
+          recordPaginationDataCount
+        )
+      );
       setUniqueDelType(
         _.uniq(
-          selectedRecordData.map((res) => {
-            return res.delType;
+          recordDataPagination.map((res) => {
+            return res!.delType;
           })
         )
       );
@@ -75,6 +85,8 @@ const RecordModal = (props: I_RecordModal) => {
       searchPagination();
     }
   }, [selectedRecordData, isRecordModalOpen]);
+
+  // HINDI PA AYOS ANG VIEW RECORD PAG OPEN AT CLOSE MO TYAKA PAG CHECK NG IBANG VIEW RECORD
 
   useEffect(() => {
     setRecordCurrentPage(0);
@@ -84,21 +96,26 @@ const RecordModal = (props: I_RecordModal) => {
   const searchPagination = () => {
     if (isRecordModalOpen && selectedRecordData.length > 0) {
       const searchResult = searchSpecific(filterBy, searchPhrase);
-      // setRecordPagination(
-      //   chunkArrayForPagination(
-      //     searchResult.slice(0).reverse(),
-      //     recordPaginationDataCount
-      //   )
-      // );
+      setRecordPagination(
+        smallDataChunkArrayForPagination(
+          searchResult.slice(0).reverse(),
+          recordPaginationDataCount
+        )
+      );
     }
   };
 
   const searchSpecific = (filter: string, value: string) => {
+    const reversedSelectedRecordData = selectedRecordData.slice(0).reverse();
+    const recordDataUnAssigned = reversedSelectedRecordData.map((res) => {
+      return _.isNil(res.messengerId) && _.isNil(res.deletedAt) ? res : null
+    }).filter((res) => !_.isNil(res))
+    const recordDataSearch = listToShow === "all" ? reversedSelectedRecordData : recordDataUnAssigned;
     if (filter === "all") {
-      return selectedRecordData
+      return recordDataSearch
         .map((res) => {
           const result = recordFilterKeys.map((resFilter) => {
-            const isExist = res[resFilter]
+            const isExist = res![resFilter]
               .toLowerCase()
               .includes(value.toLowerCase());
             return String(isExist);
@@ -108,9 +125,9 @@ const RecordModal = (props: I_RecordModal) => {
         })
         .filter((res) => !_.isNil(res));
     } else {
-      return selectedRecordData
+      return recordDataSearch
         .map((res) => {
-          const result = res[filter]
+          const result = res![filter]
             .toLowerCase()
             .includes(value.toLowerCase());
           const isIncluded = result ? res : null;
@@ -188,8 +205,9 @@ const RecordModal = (props: I_RecordModal) => {
             onClick={() => updateRecord(id)}
             style={{ color: "#007bff", cursor: "pointer" }}
           >
-          Edit
-          </span>{" "}|{" "}
+            Edit
+          </span>{" "}
+          |{" "}
           <span
             onClick={() => deleteRecord(id, subsName)}
             style={{ color: "#007bff", cursor: "pointer" }}
@@ -200,6 +218,114 @@ const RecordModal = (props: I_RecordModal) => {
       </tr>
     );
   };
+
+  const renderRecordTable = () => {
+    if(isRecordModalOpen && recordPagination.length > 0 && !isRecordDataLoading) {
+      return <>
+      <div style={{ overflow: "auto" }}>
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>SENDER</th>
+              <th>DELTYPE</th>
+              <th>PUD</th>
+              <th>Month</th>
+              <th>Year</th>
+              <th>Job#</th>
+              <th>Checklist For PPB</th>
+              <th>File Name</th>
+              <th>seq no.</th>
+              <th>CYCLECODE</th>
+              <th>Qty</th>
+              <th>ADDRESS</th>
+              <th>AREA</th>
+              <th>SUBSCRIBERS NAME</th>
+              <th>BARCODE</th>
+              <th>ACCT NO</th>
+              <th>DATE RECEIVED</th>
+              <th>RECEIVED BY</th>
+              <th>RELATION</th>
+              <th>MESSENGER</th>
+              <th>STATUS</th>
+              <th>Reason for RTS</th>
+              <th>Remarks</th>
+              <th>Date Reported</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {recordPagination[recordCurrentPage].data.map(
+              (record: I_Record, index: number) => {
+                return renderRecord(
+                  record._id,
+                  record.sender,
+                  record.delType,
+                  record.pud,
+                  record.month,
+                  record.year,
+                  record.jobNum,
+                  record.checkList,
+                  record.fileName,
+                  record.seqNum,
+                  record.cycleCode,
+                  record.qty,
+                  record.address,
+                  record.area,
+                  record.subsName,
+                  record.barCode,
+                  record.acctNum,
+                  record.dateRecieved,
+                  record.recievedBy,
+                  record.relation,
+                  record.messenger,
+                  record.status,
+                  record.reasonRTS,
+                  record.remarks,
+                  record.dateReported,
+                  index
+                );
+              }
+            )}
+          </tbody>
+        </Table>
+      </div>
+      <Pagination style={{ marginTop: "15px" }}>
+        {recordCurrentPage > 0 ? (
+          <>
+            <Pagination.First onClick={() => setRecordCurrentPage(0)} />
+            <Pagination.Prev
+              onClick={() =>
+                setRecordCurrentPage(recordCurrentPage - 1)
+              }
+            />
+          </>
+        ) : null}
+        <h3 style={{ marginLeft: "10px", marginRight: "10px" }}>
+          {recordCurrentPage + 1} of {recordPagination.length}
+        </h3>
+        {recordCurrentPage + 1 < recordPagination.length ? (
+          <>
+            <Pagination.Next
+              onClick={() =>
+                setRecordCurrentPage(recordCurrentPage + 1)
+              }
+            />
+            <Pagination.Last
+              onClick={() =>
+                setRecordCurrentPage(recordPagination.length - 1)
+              }
+            />
+          </>
+        ) : null}
+      </Pagination>
+    </>
+    } else if(isRecordModalOpen && isRecordDataLoading) {
+      return <Spinner animation="grow" />
+    } else {
+      return <h5 style={{ color: "gray" }}>No data found.</h5>
+    }
+  }
 
   const updateRecord = (recordId: string) => {
     triggerModalTopAlert(false, "", "");
@@ -230,6 +356,7 @@ const RecordModal = (props: I_RecordModal) => {
           <Form.Group controlId="exampleForm.ControlSelect1">
             <Form.Control
               as="select"
+              disabled={isRecordDataLoading}
               onChange={(e) => setFilterBy(e.target.value)}
             >
               <option value="all">Filter by All</option>
@@ -247,6 +374,7 @@ const RecordModal = (props: I_RecordModal) => {
                 name="searchPhrase"
                 value={searchPhrase}
                 placeholder="Search Record"
+                disabled={isRecordDataLoading}
                 onChange={(e) => setSearchPhrase(e.target.value)}
               />
             </Form.Group>
@@ -255,6 +383,7 @@ const RecordModal = (props: I_RecordModal) => {
               <Form.Control
                 as="select"
                 onChange={(e) => setSearchPhrase(e.target.value)}
+                disabled={isRecordDataLoading}
               >
                 <option>-- Select Delivery Type --</option>
                 {uniqueDelType.map((res: string) => {
@@ -263,109 +392,7 @@ const RecordModal = (props: I_RecordModal) => {
               </Form.Control>
             </Form.Group>
           )}
-          {isRecordModalOpen && recordPagination.length > 0 ? (
-            <>
-              <div style={{ overflow: "auto" }}>
-                <Table striped bordered hover>
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>SENDER</th>
-                      <th>DELTYPE</th>
-                      <th>PUD</th>
-                      <th>Month</th>
-                      <th>Year</th>
-                      <th>Job#</th>
-                      <th>Checklist For PPB</th>
-                      <th>File Name</th>
-                      <th>seq no.</th>
-                      <th>CYCLECODE</th>
-                      <th>Qty</th>
-                      <th>ADDRESS</th>
-                      <th>AREA</th>
-                      <th>SUBSCRIBERS NAME</th>
-                      <th>BARCODE</th>
-                      <th>ACCT NO</th>
-                      <th>DATE RECEIVED</th>
-                      <th>RECEIVED BY</th>
-                      <th>RELATION</th>
-                      <th>MESSENGER</th>
-                      <th>STATUS</th>
-                      <th>Reason for RTS</th>
-                      <th>Remarks</th>
-                      <th>Date Reported</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recordPagination[recordCurrentPage].data.map(
-                      (record: I_Record, index: number) => {
-                        return renderRecord(
-                          record._id,
-                          record.sender,
-                          record.delType,
-                          record.pud,
-                          record.month,
-                          record.year,
-                          record.jobNum,
-                          record.checkList,
-                          record.fileName,
-                          record.seqNum,
-                          record.cycleCode,
-                          record.qty,
-                          record.address,
-                          record.area,
-                          record.subsName,
-                          record.barCode,
-                          record.acctNum,
-                          record.dateRecieved,
-                          record.recievedBy,
-                          record.relation,
-                          record.messenger,
-                          record.status,
-                          record.reasonRTS,
-                          record.remarks,
-                          record.dateReported,
-                          index
-                        );
-                      }
-                    )}
-                  </tbody>
-                </Table>
-              </div>
-              <Pagination style={{ marginTop: "15px" }}>
-                {recordCurrentPage > 0 ? (
-                  <>
-                    <Pagination.First onClick={() => setRecordCurrentPage(0)} />
-                    <Pagination.Prev
-                      onClick={() =>
-                        setRecordCurrentPage(recordCurrentPage - 1)
-                      }
-                    />
-                  </>
-                ) : null}
-                <h3 style={{ marginLeft: "10px", marginRight: "10px" }}>
-                  {recordCurrentPage + 1} of {recordPagination.length}
-                </h3>
-                {recordCurrentPage + 1 < recordPagination.length ? (
-                  <>
-                    <Pagination.Next
-                      onClick={() =>
-                        setRecordCurrentPage(recordCurrentPage + 1)
-                      }
-                    />
-                    <Pagination.Last
-                      onClick={() =>
-                        setRecordCurrentPage(recordPagination.length - 1)
-                      }
-                    />
-                  </>
-                ) : null}
-              </Pagination>
-            </>
-          ) : (
-            <h5 style={{ color: "gray" }}>No data found.</h5>
-          )}
+          {renderRecordTable()}
         </Modal.Body>
         <Modal.Footer>
           <Button
@@ -397,6 +424,9 @@ const RecordModal = (props: I_RecordModal) => {
 
 const mapStateToProps = (gState: I_GlobalState) => ({
   recordData: gState.record.data,
+  isRecordDataLoading: gState.record.isLoading
 });
 
-export default connect(mapStateToProps, { triggerModalTopAlert })(RecordModal);
+export default connect(mapStateToProps, { triggerModalTopAlert, getRecord })(
+  RecordModal
+);

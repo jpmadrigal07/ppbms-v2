@@ -50,7 +50,7 @@ router.get("/", async (req, res) => {
                                 $eq: ["$encodeListId", "$$id"],
                             },
                         },
-                    }, ],
+                    }],
                     as: "unAssignedRecord",
                 },
             },
@@ -72,7 +72,7 @@ router.get("/", async (req, res) => {
                                 $eq: ["$encodeListId", "$$id"],
                             },
                         },
-                    }, ],
+                    }],
                     as: "assignedRecord",
                 },
             },
@@ -91,7 +91,7 @@ router.get("/", async (req, res) => {
                                 $eq: ["$encodeListId", "$$id"],
                             },
                         },
-                    }, ],
+                    }],
                     as: "record",
                 },
             },
@@ -109,8 +109,8 @@ router.get("/", async (req, res) => {
                 },
             },
             {
-                $unset: ["record", "assignedRecord", "unAssignedRecord"]
-            },
+                $unset: ["record", "unAssignedRecord", "assignedRecord"]
+            }
         ]);
         res.json({
             dbRes: getAllEncodeList,

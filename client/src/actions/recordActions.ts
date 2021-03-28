@@ -12,10 +12,10 @@ import {
 } from "./types";
 import _ from "lodash";
 
-export const getRecord = () => (dispatch: Function) => {
+export const getRecord = (variables: string | undefined) => (dispatch: Function) => {
   dispatch(setRecordLoader("list", true));
   axios
-    .get(`/api/record`)
+    .get(`/api/record${variables}`)
     .then((res) => {
       dispatch({
         type: GET_RECORD,
@@ -163,7 +163,6 @@ export const updateExcelFile = (file: string, sheetNumber: string) => (
 };
 
 export const bulkDeleteRecord = (ids: string[]) => (dispatch: Function) => {
-  console.log('bulk delete')
   dispatch(setRecordLoader("delete", true));
   axios
     .delete(`/api/record/bulk`, { data: ids })

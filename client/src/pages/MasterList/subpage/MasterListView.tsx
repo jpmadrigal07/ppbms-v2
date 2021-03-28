@@ -9,7 +9,7 @@ import {
 import "../MasterList.scss";
 import { bulkDeleteRecord } from "../../../actions/recordActions";
 import { getEncodeList } from "../../../actions/encodeListActions";
-import { chunkArrayForPagination, chunkArrayForSearchPagination } from "../../../helper";
+import { bigDataChunkArrayForPagination, chunkArrayForSearchPagination } from "../../../helper";
 import { encodeListPaginationDataCount } from "../../../constant";
 import { triggerModalTopAlert } from "../../../actions/modalTopAlertActions";
 import RecordModal from "../modal/RecordModal";
@@ -69,7 +69,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
   useEffect(() => {
     const pageLoadedLoading = pageLoaded.includes(encodeListCurrentPage)
     if(currentPage === "Master Lists" && encodeListData.length > 0 && searchPhrase === "" && !isEncodeListLoading && pageLoadedLoading) {
-      const bebebe = chunkArrayForPagination(
+      const pagination = bigDataChunkArrayForPagination(
         encodeListData,
         encodeListPagination,
         pageLoaded.slice(-1).pop(),
@@ -77,7 +77,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
         pageLoaded.findIndex((res: number) => res === encodeListCurrentPage)
       );
       setEncodeListPagination(
-        bebebe
+        pagination
       );
     } else if(currentPage === "Master Lists" && encodeListData.length > 0 && searchPhrase !== "" && !isEncodeListLoading) {
       setEncodeListSearchPagination(
@@ -131,9 +131,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
 
       const actualPageNumber = alterPageNumberBy;
       const isPageLoaded = pageLoaded.includes(actualPageNumber);
-      // MALI TONG TO SKIP PLEASE FIX THIS KAILANGAN I CONSIDER AND SUBTRACTION OF PAGE
       const toSkip = actualPageNumber*encodeListPaginationDataCount;
-      console.log('feel', toSkip)
       if(!isPageLoaded) {
         const urlVariables = `?limit=${encodeListPaginationDataCount}&skip=${toSkip}`;
         const newPageNumber = actualPageNumber;
