@@ -116,7 +116,8 @@ export interface I_DispatchControlMessenger {
     address: string,
     preparedBy: string,
     date: string,
-    deletedAt: string
+    deletedAt: string,
+    [key: string]: any
 }
 
 export interface I_EncodeList {
@@ -317,7 +318,11 @@ export interface I_MasterListViewProps {
 
 export interface I_MessengerListViewProps {
     triggerModalTopAlert: Function,
+    getDispatchControlMessengers: Function,
     currentPage: string,
+    isDispatchControlMessengerLoading: boolean
+    dispatchControlMessengerData: I_DispatchControlMessenger[],
+    gAuthData: any
 }
 
 export interface I_RecordModal {
