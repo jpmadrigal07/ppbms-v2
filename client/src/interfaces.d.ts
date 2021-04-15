@@ -212,7 +212,8 @@ export interface I_NavbarTopProps {
     gAuthIsLoading: boolean,
     gAuthData: any,
     triggerTopAlert: Function,
-    isTopAlertVisible: boolean
+    isTopAlertVisible: boolean,
+    gFetchUser: Function
 }
 
 export interface I_LoginProps {
@@ -220,7 +221,9 @@ export interface I_LoginProps {
     gAuthData: any,
     loginUser: Function,
     gAuthIsLoading: boolean,
-    gFetchUser: Function
+    gFetchUser: Function,
+    triggerTopAlert: Function,
+    isTopAlertVisible: boolean
 }
 
 export interface I_LoginCredentials {
@@ -307,7 +310,14 @@ export interface I_MasterListViewProps {
     importedListCount: number,
     getEncodeList: Function,
     currentPage: string,
-    pageLoaded: number[]
+    pageLoaded: number[],
+    getDashboardCount: Function,
+    gAuthData: any
+}
+
+export interface I_MessengerListViewProps {
+    triggerModalTopAlert: Function,
+    currentPage: string,
 }
 
 export interface I_RecordModal {
@@ -360,6 +370,13 @@ export interface I_File {
     size: number,
     type: string,
     webkitRelativePath: string
+}
+
+export interface I_ReceiptProps {
+    recordData: I_Record[],
+    getRecord: Function,
+    gSetCurrentPage: Function,
+    gAuthData: any
 }
 
 

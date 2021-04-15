@@ -12,6 +12,7 @@ import { getEncodeList } from "../../../actions/encodeListActions";
 import { bigDataChunkArrayForPagination, chunkArrayForSearchPagination } from "../../../helper";
 import { encodeListPaginationDataCount } from "../../../constant";
 import { triggerModalTopAlert } from "../../../actions/modalTopAlertActions";
+import { getDashboardCount } from "../../../actions/dashboardCountActions";
 import RecordModal from "../modal/RecordModal";
 import DeleteEncodeListModal from "../modal/DeleteEncodeListModal";
 import _ from "lodash";
@@ -19,6 +20,7 @@ import moment from "moment";
 
 const MasterListView = (props: I_MasterListViewProps) => {
   const {
+    getDashboardCount,
     recordData,
     encodeListData,
     bulkDeleteRecord,
@@ -28,7 +30,8 @@ const MasterListView = (props: I_MasterListViewProps) => {
     importedListCount,
     getEncodeList,
     currentPage,
-    pageLoaded
+    pageLoaded,
+    gAuthData
   } = props;
 
   const [encodeListPaginationCount, setEncodeListPaginationCount] = useState(0);
@@ -50,6 +53,14 @@ const MasterListView = (props: I_MasterListViewProps) => {
   const [searchPhrase, setSearchPhrase] = useState("");
 
   useEffect(() => {
+    if (!_.isNil(gAuthData) && gAuthData !== "" && !_.isNil(gAuthData.role)) {
+      if(importedListCount === 0) {
+        getDashboardCount("importedList")
+      }
+    }
+  }, [gAuthData])
+
+  useEffect(() => {
     const recordEncodeListIds = _.uniq(
       recordData.map((res) => {
         return res.encodeListId;
@@ -62,6 +73,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
       const deletedEncodeList = recordEncodeListIds.filter(function (val) {
         return encodeListIds.indexOf(val) == -1;
       });
+      // KAILANGAN IMBESTIGAHAN TO KASI NAWAWALA YUNG DATA
       bulkDeleteRecord(deletedEncodeList);
     }
   }, [encodeListData, isRecordLoading]);
@@ -88,7 +100,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
         )
       );
     }
-  }, [encodeListData, pageLoaded]);
+  }, [encodeListData, pageLoaded, encodeListCurrentPage]);
 
   useEffect(() => {
     // This variable is the query variables that is being pass to the api for condition
@@ -151,6 +163,8 @@ const MasterListView = (props: I_MasterListViewProps) => {
     }
   }
 
+  // PAG NAG NAG PUNTA KA MASTERLIST TAPOS LUMIPAT KA NG PAGINATION TAPOS LIPAT NG PAGE PAG BALIK MO SA MASTERLIST HINDI NA 5 YUNG BILANG SA LIST MADAMI NA.
+
   const renderEncodeLists = (
     id: string,
     fileName: string,
@@ -192,7 +206,14 @@ const MasterListView = (props: I_MasterListViewProps) => {
           >
             View Record
           </span>{" "}
-          |{" "}
+          |{" "}<span
+            className="BasicLink"
+            onClick={() =>
+              window.open(`/receipt?encodelistid=${id}`, "_blank")
+            }
+          >
+            Print Receipt
+          </span>{" "}|{" "}
           <span
             className="BasicLink"
             onClick={() => deleteEncodeList(id, fileName)}
@@ -254,15 +275,15 @@ const MasterListView = (props: I_MasterListViewProps) => {
             <tbody>
               {encodeListPagination[pageIndex].data.map(
                 (encodeList: I_EncodeList, index: number) => {
-                  return renderEncodeLists(
-                    encodeList._id,
-                    encodeList.fileName,
-                    encodeList.createdAt,
-                    encodeList.assignedRecordCount,
-                    encodeList.unAssignedRecordCount,
-                    encodeList.recordCount,
-                    index
-                  );
+                    return renderEncodeLists(
+                      encodeList._id,
+                      encodeList.fileName,
+                      encodeList.createdAt,
+                      encodeList.assignedRecordCount,
+                      encodeList.unAssignedRecordCount,
+                      encodeList.recordCount,
+                      index
+                    );
                 }
               )}
             </tbody>
@@ -345,36 +366,6 @@ const MasterListView = (props: I_MasterListViewProps) => {
               )}
             </tbody>
           </Table>
-
-          <Pagination>
-            {encodeListSearchCurrentPage > 0 ? (
-              <>
-                <Pagination.First onClick={() => setEncodeListSearchCurrentPage(0)} />
-                <Pagination.Prev
-                  // onClick={() =>
-                    // alterPagination(false, false, 1)
-                  // }
-                />
-              </>
-            ) : null}
-            <h3 style={{ marginLeft: "10px", marginRight: "10px" }}>
-              {encodeListSearchCurrentPage + 1} of {encodeListSearchPagination.length}
-            </h3>
-            {encodeListSearchCurrentPage + 1 < encodeListSearchPagination.length ? (
-              <>
-                <Pagination.Next
-                  // onClick={() =>
-                    // alterPagination(true, false, 1)
-                  // }
-                />
-                <Pagination.Last
-                  // onClick={() =>
-                    // alterPagination(true, true, encodeListSearchPagination.length - 1)
-                  // }
-                />
-              </>
-            ) : null}
-          </Pagination>
         </>
       );
     } else if (
@@ -420,6 +411,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
 };
 
 const mapStateToProps = (gState: I_GlobalState) => ({
+  gAuthData: gState.auth.user,
   encodeListData: gState.encodeList.data,
   currentPage: gState.navBar.currentPage,
   recordData: gState.record.data,
@@ -430,6 +422,7 @@ const mapStateToProps = (gState: I_GlobalState) => ({
 });
 
 export default connect(mapStateToProps, {
+  getDashboardCount,
   getEncodeList,
   bulkDeleteRecord,
   triggerModalTopAlert

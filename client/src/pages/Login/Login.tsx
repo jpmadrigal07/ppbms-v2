@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from "react";
 import _ from "lodash";
+import { useHistory } from "react-router-dom";
 import { Alert, Card, Form, Button, Spinner, Row, Col, Container } from 'react-bootstrap';
 import { loginUser } from '../../actions/authActions';
 import { gSetCurrentPage } from "../../actions/navBarActions";
 import { gFetchUser } from "../../actions/authActions";
 import { I_GlobalState, I_LoginProps } from "../../interfaces";
+import { triggerTopAlert } from "../../actions/topAlertActions";
+import { defaultPageWhenLoggedIn } from "../../constant";
 import { connect } from "react-redux";
 
 const Login = (props: I_LoginProps) => {
-  const { gSetCurrentPage, gAuthData, gAuthIsLoading, loginUser, gFetchUser } = props;
-
+  const { gSetCurrentPage, gAuthData, gAuthIsLoading, loginUser, gFetchUser, triggerTopAlert, isTopAlertVisible } = props;
+  const history = useHistory();
   const [isLoading, setisLoading] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -43,7 +46,7 @@ const Login = (props: I_LoginProps) => {
           // return the user data value to null
           gFetchUser();
         } else {
-          gSetCurrentPage("Dashboard")
+          changePage(defaultPageWhenLoggedIn)
         }
         setisLoading(false);
         setIsLoggingIn(false);
@@ -87,6 +90,17 @@ const Login = (props: I_LoginProps) => {
         setisLoading(false);
       }
     }
+  };
+
+  const changePage = (page: string) => {
+    if (isTopAlertVisible) {
+      triggerTopAlert(false, "", "");
+    }
+    gSetCurrentPage(page);
+    let link = page;
+    link = link.replace(/\s/g, "");
+    link = link.toLowerCase();
+    history.push("/" + link);
   };
 
   const renderForm = () => {
@@ -139,7 +153,8 @@ const Login = (props: I_LoginProps) => {
 
 const mapStateToProps = (gState: I_GlobalState) => ({
   gAuthIsLoading: gState.auth.isLoading,
-  gAuthData: gState.auth.user
+  gAuthData: gState.auth.user,
+  isTopAlertVisible: gState.topAlert.showAlert
 });
 
-export default connect(mapStateToProps, { gSetCurrentPage, loginUser, gFetchUser })(Login);
+export default connect(mapStateToProps, { gSetCurrentPage, loginUser, gFetchUser, triggerTopAlert })(Login);

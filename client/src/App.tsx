@@ -8,6 +8,7 @@ import DispatchControl from "./pages/DispatchControl/DispatchControl";
 import MasterList from "./pages/MasterList/MasterList";
 import Login from "./pages/Login/Login";
 import Settings from "./pages/Settings/Settings";
+import Receipt from "./pages/Receipt/Receipt";
 import { pageTitle } from "./constant";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.scss";
@@ -74,6 +75,12 @@ const App = (props: I_AppProps) => {
             path="/settings"
             render={() => {
               return <Settings />;
+            }}
+          />
+          <Route
+            path="/receipt"
+            render={() => {
+              return <Receipt />;
             }}
           />
         </>

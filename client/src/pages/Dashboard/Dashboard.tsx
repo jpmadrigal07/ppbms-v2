@@ -32,7 +32,7 @@ const Dashboard = (props: I_DashboardProps) => {
   } = props;
 
   useEffect(() => {
-    if (gAuthData && gAuthData !== "") {
+    if (gAuthData && gAuthData !== "" && !_.isNil(gAuthData.role)) {
       if(importedListCount === 0) {
         getDashboardCount("importedList")
       }

@@ -187,7 +187,7 @@ const RecordModal = (props: I_RecordModal) => {
         <td>{seqNum}</td>
         <td>{cycleCode}</td>
         <td>{qty}</td>
-        <td>{address}</td>
+        <td className="Truncate">{address}</td>
         <td>{area}</td>
         <td>{subsName}</td>
         <td>{barCode}</td>
@@ -346,6 +346,7 @@ const RecordModal = (props: I_RecordModal) => {
         show={isRecordModalOpen}
         onHide={() => setIsRecordModalOpen(false)}
         size="xl"
+        className="SampleClass"
       >
         <Modal.Header closeButton>
           <Modal.Title>{modalTitle}</Modal.Title>

@@ -1,0 +1,77 @@
+.container-fluid {
+    font-size: 8px;
+}
+.table-border {
+    border: 1px solid #999;
+}
+.span-border {
+    border: 1px solid #999;
+    border-radius: 5px;
+    width: 100%;
+    height: 57px;
+    padding: 4px 5px;
+    margin: 3px 0px 3px 0px;
+}
+.span-border-bottom {
+    border: 1px solid #999;
+    border-radius: 5px;
+    width: 100%;
+    height: 69px;
+    padding: 1px 5px;
+    margin: 10px 0px 10px 0px;
+    font-size: 6.8px;
+}
+.rts-border {
+    border: 1px solid #999;
+    width: 100%;
+    padding: 3px;
+    margin: 10px 0px -5px 0px;
+    font-size: 7px;
+}
+.top-margin {
+    margin-top: 7px;
+}
+.span-empty {
+    width: 100%;
+    margin: 10px 0px 0px 0px;
+}
+.table-data {
+    width: 100%;
+}
+.row-margin {
+    padding: 0px 15px 0px 15px;
+}
+.table-header {
+    visibility: hidden
+}
+.fillup-margin {
+    padding: 5px 0px 0px 0px;
+}
+tr.highlight td {padding-left: 16px; padding-right:16px;}
+#page-break {page-break-after: always;}
+@page {
+    margin: 1mm !important;
+    size: landscape !important;
+}
+@media print {
+    #page-break {margin-top: 0mm  !important;}
+}
+.particular {
+    font-size: 11px;
+}
+.particular2 {
+    font-size: 9px;
+}
+.cut-text { 
+    font-family: Arial !important;
+    width: 170px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #252525;
+    font-weight: bold;
+}
+#subsname {
+    font-weight: bold;
+    font-size: 10px;
+}

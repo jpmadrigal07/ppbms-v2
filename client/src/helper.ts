@@ -1,4 +1,4 @@
-import { map } from "lodash";
+
 import { encodeListPaginationDataCount } from "./constant";
 import _ from "lodash";
 import { I_EncodeList } from "./interfaces";
@@ -14,7 +14,7 @@ export const bigDataChunkArrayForPagination = (
   const currentPaginationCount = currentPaginationData.length;
   const lastPageNumberG = !_.isNil(lastPageNumber) ? lastPageNumber : 0;
   const toSkipM = currentPageNumberIndex > 1 ? currentPageNumberIndex : 1;
-  if (currentPaginationCount !== 0) {
+  if (currentPaginationCount !== 0 || updatedData.length > 5 ) {
     const toSkipData =
       currentPageNumber > lastPageNumberG
         ? currentPaginationCount * encodeListPaginationDataCount - 1
@@ -83,4 +83,3 @@ export const smallDataChunkArrayForPagination = (
   }
   return chunked_arr;
 };
-
