@@ -2,9 +2,15 @@ import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { triggerModalTopAlert } from "../../../actions/modalTopAlertActions";
 import { Table, Spinner, Pagination, Form } from "react-bootstrap";
-import { I_MessengerListViewProps, I_GlobalState, I_DispatchControlMessenger } from "../../../interfaces";
+import {
+  I_MessengerListViewProps,
+  I_GlobalState,
+  I_DispatchControlMessenger,
+} from "../../../interfaces";
 import moment from "moment";
 import { getDispatchControlMessengers } from "../../../actions/dispatchControlMessengerActions";
+import { encodeListPaginationDataCount } from "../../../constant";
+import { getDashboardCount } from "../../../actions/dashboardCountActions";
 
 const MessengerListView = (props: I_MessengerListViewProps) => {
   const {
@@ -13,14 +19,54 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
     isDispatchControlMessengerLoading,
     dispatchControlMessengerData,
     getDispatchControlMessengers,
-    gAuthData
+    gAuthData,
+    getDashboardCount,
+    dispatchControlCount,
   } = props;
+
+  const [
+    messengerListPaginationCount,
+    setMessengerListPaginationCount,
+  ] = useState(0);
+  const [messengerListPagination, setMessengerListPagination] = useState<any>(
+    []
+  );
+  const [messengerListCurrentPage, setMessengerListCurrentPage] = useState(0);
+
+  useEffect(() => {
+    if (dispatchControlCount === 0) {
+      getDashboardCount("dispatchControl");
+    }
+  }, [dispatchControlCount, getDashboardCount]);
+
+  const alterPagination = (
+    isAddition: boolean,
+    isLastPage: boolean,
+    value: number
+  ) => {
+    if (!isLastPage) {
+      const add = messengerListCurrentPage + value;
+      const subtract = messengerListCurrentPage - value;
+      const alterPageNumberBy = isAddition ? add : subtract;
+      setMessengerListCurrentPage(alterPageNumberBy);
+    } else {
+      setMessengerListCurrentPage(value);
+    }
+  };
 
   useEffect(() => {
     if (gAuthData && gAuthData !== "" && gAuthData.role) {
-        getDispatchControlMessengers()
+      getDispatchControlMessengers();
     }
-  }, [gAuthData])
+  }, [gAuthData, getDispatchControlMessengers]);
+
+  useEffect(() => {
+    if (dispatchControlCount > 0) {
+      setMessengerListPaginationCount(
+        Math.ceil(dispatchControlCount / encodeListPaginationDataCount)
+      );
+    }
+  }, [dispatchControlCount]);
 
   const renderDispatchControlMessenger = (
     id: string,
@@ -38,31 +84,16 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
         <td>{prepared}</td>
         <td>{moment(date).format("MMM D, YYYY")}</td>
         <td>
-          <span
-            className="BasicLink"
-          >
-            View Record
-          </span>{" "}
-          |{" "}<span
-            className="BasicLink"
-          >
-            Print Receipt
-          </span>{" "}|{" "}
-          <span
-            className="BasicLink"
-          >
-            Delete
-          </span>
+          <span className="BasicLink">View Record</span> |{" "}
+          <span className="BasicLink">Print Receipt</span> |{" "}
+          <span className="BasicLink">Delete</span>
         </td>
       </tr>
     );
   };
 
   const renderDispatchControlMessengerTable = () => {
-
-    if (
-      !isDispatchControlMessengerLoading
-    ) {
+    if (!isDispatchControlMessengerLoading) {
       return (
         <>
           <Table striped bordered hover>
@@ -91,6 +122,37 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
               )}
             </tbody>
           </Table>
+          <Pagination>
+            {messengerListCurrentPage > 0 ? (
+              <>
+                <Pagination.First
+                  onClick={() => setMessengerListCurrentPage(0)}
+                />
+                <Pagination.Prev
+                  onClick={() => alterPagination(false, false, 1)}
+                />
+              </>
+            ) : null}
+            <h3 style={{ marginLeft: "10px", marginRight: "10px" }}>
+              {messengerListCurrentPage + 1} of {messengerListPaginationCount}
+            </h3>
+            {messengerListCurrentPage + 1 < messengerListPaginationCount ? (
+              <>
+                <Pagination.Next
+                  onClick={() => alterPagination(true, false, 1)}
+                />
+                <Pagination.Last
+                  onClick={() =>
+                    alterPagination(
+                      true,
+                      true,
+                      messengerListPaginationCount - 1
+                    )
+                  }
+                />
+              </>
+            ) : null}
+          </Pagination>
         </>
       );
     }
@@ -116,10 +178,12 @@ const mapStateToProps = (gState: I_GlobalState) => ({
   gAuthData: gState.auth.user,
   currentPage: gState.navBar.currentPage,
   isDispatchControlMessengerLoading: gState.dispatchControlMessenger.isLoading,
-  dispatchControlMessengerData: gState.dispatchControlMessenger.data
+  dispatchControlMessengerData: gState.dispatchControlMessenger.data,
+  dispatchControlCount: gState.dashboardCount.dispatchControl,
 });
 
 export default connect(mapStateToProps, {
   triggerModalTopAlert,
-  getDispatchControlMessengers
+  getDispatchControlMessengers,
+  getDashboardCount,
 })(MessengerListView);

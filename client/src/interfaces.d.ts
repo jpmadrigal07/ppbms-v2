@@ -322,7 +322,9 @@ export interface I_MessengerListViewProps {
     currentPage: string,
     isDispatchControlMessengerLoading: boolean
     dispatchControlMessengerData: I_DispatchControlMessenger[],
-    gAuthData: any
+    gAuthData: any,
+    getDashboardCount: Function,
+    dispatchControlCount: number
 }
 
 export interface I_RecordModal {

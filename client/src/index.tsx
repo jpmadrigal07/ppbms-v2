@@ -7,7 +7,11 @@ import reducers from "./reducers";
 import { composeWithDevTools } from "redux-devtools-extension";
 import App from "./App";
 
-const store = createStore(reducers, {}, composeWithDevTools(applyMiddleware(reduxThunk)));
+const store = createStore(
+  reducers,
+  {},
+  composeWithDevTools(applyMiddleware(reduxThunk))
+);
 
 ReactDOM.render(
   <Provider store={store}>

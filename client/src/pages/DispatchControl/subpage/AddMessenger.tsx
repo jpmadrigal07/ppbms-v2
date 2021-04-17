@@ -35,10 +35,16 @@ const AddMessenger = (props: I_AddMessengerProps) => {
       setPreparedBy("");
       setDate("");
     }
-  }, [isAddDispatchControlMessengerLoading]);
+  }, [
+    date,
+    dispatchControlMessengerData,
+    isAddDispatchControlMessengerLoading,
+    name,
+  ]);
 
   const handleAddMessenger = async (e: any) => {
     e.preventDefault();
+    triggerTopAlert(false, "", "");
     if (name === "" || address === "" || preparedBy === "" || date === "") {
       triggerTopAlert(true, "Please complete all the inputs", "warning");
     } else {
@@ -115,7 +121,8 @@ const AddMessenger = (props: I_AddMessengerProps) => {
 };
 
 const mapStateToProps = (gState: I_GlobalState) => ({
-  isAddDispatchControlMessengerLoading: gState.dispatchControlMessenger.isAddLoading,
+  isAddDispatchControlMessengerLoading:
+    gState.dispatchControlMessenger.isAddLoading,
   dispatchControlMessengerData: gState.dispatchControlMessenger.data,
 });
 

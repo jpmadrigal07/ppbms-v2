@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { connect } from "react-redux";
 import { Card, Container, Row, Col, Spinner } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -28,25 +28,32 @@ const Dashboard = (props: I_DashboardProps) => {
     dispatchControlCount,
     isDispatchControlLoading,
     listCompletedCount,
-    isListCompletedLoading
+    isListCompletedLoading,
   } = props;
 
   useEffect(() => {
     if (gAuthData && gAuthData !== "" && !_.isNil(gAuthData.role)) {
-      if(importedListCount === 0) {
-        getDashboardCount("importedList")
+      if (importedListCount === 0) {
+        getDashboardCount("importedList");
       }
-      if(listDataCount === 0) {
-        getDashboardCount("listData")
+      if (listDataCount === 0) {
+        getDashboardCount("listData");
       }
-      if(dispatchControlCount === 0) {
-        getDashboardCount("dispatchControl")
+      if (dispatchControlCount === 0) {
+        getDashboardCount("dispatchControl");
       }
-      if(listCompletedCount === 0) {
-        getDashboardCount("listCompleted")
+      if (listCompletedCount === 0) {
+        getDashboardCount("listCompleted");
       }
     }
-  }, [gAuthData]);
+  }, [
+    dispatchControlCount,
+    gAuthData,
+    getDashboardCount,
+    importedListCount,
+    listCompletedCount,
+    listDataCount,
+  ]);
 
   const formatCash = (n: number) => {
     if (n < 1e3) return n;
@@ -139,7 +146,7 @@ const mapStateToProps = (gState: I_GlobalState) => ({
   dispatchControlCount: gState.dashboardCount.dispatchControl,
   isDispatchControlLoading: gState.dashboardCount.isDispatchControlLoading,
   listCompletedCount: gState.dashboardCount.listCompleted,
-  isListCompletedLoading: gState.dashboardCount.isListCompletedLoading
+  isListCompletedLoading: gState.dashboardCount.isListCompletedLoading,
 });
 
 export default connect(mapStateToProps, {
