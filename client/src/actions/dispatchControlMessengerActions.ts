@@ -3,18 +3,30 @@ import {
   GET_DISPATCH_CONTROL_MESSENGERS,
   DISPATCH_CONTROL_MESSENGER_LOADER,
   ADD_DISPATCH_CONTROL_MESSENGER,
-  TOP_ALERT
+  TOP_ALERT,
+  PAGE_LOADED_MESSENGERS
 } from "./types";
+import _ from "lodash";
 
-export const getDispatchControlMessengers = () => (dispatch: Function) => {
+export const getDispatchControlMessengers = (variables: string | undefined, pageNumber: number | undefined) => (dispatch: Function) => {
   dispatch(setDispatchControlMessengerLoader("list", true));
   axios
-    .get(`/api/dispatchControlMessenger`)
+    .get(`/api/dispatchControlMessenger${variables}`)
     .then((res) => {
       dispatch({
         type: GET_DISPATCH_CONTROL_MESSENGERS,
         payload: res.data !== "" ? res.data : {},
       });
+      if(!_.isNil(pageNumber)) {
+        const dbRes = res.data.dbRes;
+        const isDbResArray = _.isArray(dbRes);
+        if(isDbResArray && dbRes.length > 0) {
+          dispatch({
+            type: PAGE_LOADED_MESSENGERS,
+            payload: pageNumber
+          });
+        }
+      }
     })
     .catch((err) => {
       dispatch(setDispatchControlMessengerLoader("list", false));

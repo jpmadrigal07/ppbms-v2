@@ -51,7 +51,7 @@ router.get("/count", async (req, res) => {
     };
   }
   try {
-    const getAllRecord = await Record.find(condition).estimatedDocumentCount();
+    const getAllRecord = await Record.find(condition).countDocuments();
     res.json({
       dbRes: getAllRecord,
       isSuccess: true,

@@ -139,7 +139,7 @@ router.get("/count", async (req, res) => {
     try {
         const getAllEncodeList = await EncodeList.find(
             condition
-        ).estimatedDocumentCount();
+        ).countDocuments();
         res.json({
             dbRes: getAllEncodeList,
             isSuccess: true,

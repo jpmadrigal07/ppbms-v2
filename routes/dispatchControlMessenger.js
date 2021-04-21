@@ -8,20 +8,24 @@ const _ = require("lodash");
 // @access  Public
 router.get("/", async (req, res) => {
   const condition = !_.isNil(req.query.condition) ? JSON.parse(req.query.condition) : {};
+  const limit = !_.isNil(req.query.limit) ? JSON.parse(req.query.limit) : 0;
+  const skip = !_.isNil(req.query.skip) ? JSON.parse(req.query.skip) : 0;
   if (_.isNil(condition.deletedAt)) {
       condition.deletedAt = {
           $exists: false
       }
   }
+  
   try {
-    const getAllDispatchControlMessenger = await DispatchControlMessenger.find(condition);
+    const getAllDispatchControlMessenger = await DispatchControlMessenger.find(condition).skip(skip).limit(limit);
+    console.log('smile', getAllDispatchControlMessenger)
     res.json({
       dbRes: getAllDispatchControlMessenger,
       isSuccess: true
     });
   } catch (error) {
     res.json({
-      dbRes: err,
+      dbRes: error,
       isSuccess: false
     });
   }
@@ -37,8 +41,9 @@ router.get("/count", async (req, res) => {
           $exists: false
       }
   }
+  
   try {
-    const getAllDispatchControlMessenger = await DispatchControlMessenger.find(condition).estimatedDocumentCount();
+    const getAllDispatchControlMessenger = await DispatchControlMessenger.find(condition).countDocuments();
     res.json({
       dbRes: getAllDispatchControlMessenger,
       isSuccess: true

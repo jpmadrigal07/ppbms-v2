@@ -44,7 +44,8 @@ export interface I_GlobalState {
         isUpdateLoading: boolean,
         isAddLoading: boolean,
         isDeleteLoading: boolean,
-        data: I_DispatchControlMessenger[]
+        data: I_DispatchControlMessenger[],
+        pageLoaded: number[]
     }
     encodeList: {
         isLoading: boolean,
@@ -324,7 +325,8 @@ export interface I_MessengerListViewProps {
     dispatchControlMessengerData: I_DispatchControlMessenger[],
     gAuthData: any,
     getDashboardCount: Function,
-    dispatchControlCount: number
+    dispatchControlCount: number,
+    pageLoaded: number[]
 }
 
 export interface I_RecordModal {

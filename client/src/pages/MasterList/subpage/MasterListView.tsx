@@ -183,8 +183,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
       const toSkip = actualPageNumber * encodeListPaginationDataCount;
       if (!isPageLoaded) {
         const urlVariables = `?limit=${encodeListPaginationDataCount}&skip=${toSkip}`;
-        const newPageNumber = actualPageNumber;
-        getEncodeList(urlVariables, newPageNumber, toSkip);
+        getEncodeList(urlVariables, actualPageNumber, toSkip);
       }
     } else {
       setEncodeListCurrentPage(value);
@@ -195,13 +194,10 @@ const MasterListView = (props: I_MasterListViewProps) => {
         const limit =
           remainder === 0 ? encodeListPaginationDataCount : remainder;
         const urlVariables = `?limit=${limit}&skip=${toSkip}`;
-        const newPageNumber = value;
-        getEncodeList(urlVariables, newPageNumber, toSkip);
+        getEncodeList(urlVariables, value, toSkip);
       }
     }
   };
-
-  // PAG NAG NAG PUNTA KA MASTERLIST TAPOS LUMIPAT KA NG PAGINATION TAPOS LIPAT NG PAGE PAG BALIK MO SA MASTERLIST HINDI NA 5 YUNG BILANG SA LIST MADAMI NA.
 
   const renderEncodeLists = (
     id: string,
@@ -286,6 +282,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
   };
 
   const renderEncodeListTable = () => {
+    console.log("kainaman", encodeListPagination);
     const isPageExist =
       encodeListPagination.filter((pagination: any) => {
         return pagination.pageNumber === encodeListCurrentPage;
