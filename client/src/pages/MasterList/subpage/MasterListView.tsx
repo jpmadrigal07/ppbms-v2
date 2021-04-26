@@ -71,6 +71,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
   }, [gAuthData]);
 
   useEffect(() => {
+    console.log('gggra 1')
     const recordEncodeListIds = _.uniq(
       recordData.map((res) => {
         return res.encodeListId;
@@ -90,6 +91,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
   }, [encodeListData, isRecordLoading]);
 
   useEffect(() => {
+    console.log('gggra 2')
     const pageLoadedLoading = pageLoaded.includes(encodeListCurrentPage);
     if (
       currentPage === "Master Lists" &&
@@ -282,7 +284,6 @@ const MasterListView = (props: I_MasterListViewProps) => {
   };
 
   const renderEncodeListTable = () => {
-    console.log("kainaman", encodeListPagination);
     const isPageExist =
       encodeListPagination.filter((pagination: any) => {
         return pagination.pageNumber === encodeListCurrentPage;

@@ -351,6 +351,17 @@ export interface I_DeleteEncodeListModal {
     encodeListData: I_EncodeList[]
 }
 
+export interface I_DeleteMessengerModal {
+    selectedMessengerName: string,
+    selectedMessengerId: string,
+    isDeleteMessengerModalOpen: boolean,
+    setIsDeleteMessengerModalOpen: Function,
+    isMessengerDeleteLoading: boolean,
+    deleteDispatchControlMessenger: Function,
+    messengerData: I_DispatchControlMessenger[],
+    triggerSecondModalTopAlert: Function
+}
+
 export interface I_DeleteRecordModal {
     selectedRecordSubsName: string,
     selectedRecordId: string,

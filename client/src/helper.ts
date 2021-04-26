@@ -3,6 +3,7 @@ import { encodeListPaginationDataCount } from "./constant";
 import _ from "lodash";
 import { I_DispatchControlMessenger, I_EncodeList } from "./interfaces";
 import moment from "moment";
+import { isNumber } from "util";
 
 export const bigDataChunkArrayForPagination = (
   updatedData: any,
@@ -69,11 +70,11 @@ export const chunkArrayForSearchPagination = (
 };
 
 export const chunkArrayForSearchPaginationDispatch = (
-  encodeListData: any,
+  messengerListData: any,
   size: number,
   searchPhrase: string
 ) => {
-  const array = encodeListData
+  const array = messengerListData
     .map((messengerData: I_DispatchControlMessenger) => {
       const name = messengerData.name.toLowerCase();
       const address = messengerData.address.toLowerCase();
@@ -81,20 +82,29 @@ export const chunkArrayForSearchPaginationDispatch = (
       const result = name.includes(searchPhrase) || address.includes(searchPhrase) || preparedBy.includes(searchPhrase);
       return result ? messengerData : null; 
     })
-    .filter((encodeListData: I_DispatchControlMessenger) => !_.isNil(encodeListData));
+    .filter((messengerListData: I_DispatchControlMessenger) => !_.isNil(messengerListData));
 
-    console.log('sds', encodeListData)
-  const chunked_arr = [];
-  let index = 0;
-  while (index < array.length) {
-    chunked_arr.push({
-      pageNumber: index,
-      data: array.slice(index, size + index),
-    });
-    index += size;
-  }
-  return chunked_arr;
+  return chunk(array, size);
 };
+
+export const chunkArray = (
+  data: any,
+  size: number,
+) => {
+  return chunk(data, size);
+};
+
+const chunk = (arr: any, len: any) => {
+  let chunks = [],
+      i = 0,
+      n = arr.length,
+      index = 0;
+  while (i < n) {
+    chunks.push({pageNumber: index, data: arr.slice(i, i += len)});
+    index++;
+  }
+  return chunks;
+}
 
 export const smallDataChunkArrayForPagination = (
   encodeListData: any,

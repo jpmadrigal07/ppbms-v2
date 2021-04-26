@@ -2,10 +2,10 @@ import {
   GET_DISPATCH_CONTROL_MESSENGERS,
   ADD_DISPATCH_CONTROL_MESSENGER,
   DISPATCH_CONTROL_MESSENGER_LOADER,
-  PAGE_LOADED_ENCODE_LIST,
-  PAGE_LOADED_MESSENGERS
+  PAGE_LOADED_MESSENGERS,
+  DELETE_DISPATCH_CONTROL_MESSENGER
 } from "../actions/types";
-import { I_ReduxAction } from "../interfaces";
+import { I_DispatchControlMessenger, I_ReduxAction } from "../interfaces";
 import _ from "lodash";
 
 const initialState = {
@@ -46,6 +46,12 @@ export default function (state = initialState, action: I_ReduxAction) {
         isUpdateLoading: payload.type === 'update' ? payload.isLoading : state.isUpdateLoading,
         isAddLoading: payload.type === 'add' ? payload.isLoading : state.isAddLoading,
         isDeleteLoading: payload.type === 'delete' ? payload.isLoading : state.isDeleteLoading
+      };
+    case DELETE_DISPATCH_CONTROL_MESSENGER:
+      return {
+        ...state,
+        isDeleteLoading: false,
+        data: state.data.filter((data: I_DispatchControlMessenger) => data._id !== payload._id),
       };
     default:
       return state;

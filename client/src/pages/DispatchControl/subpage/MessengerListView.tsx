@@ -11,9 +11,11 @@ import moment from "moment";
 import { getDispatchControlMessengers } from "../../../actions/dispatchControlMessengerActions";
 import { encodeListPaginationDataCount } from "../../../constant";
 import { getDashboardCount } from "../../../actions/dashboardCountActions";
+import DeleteMessengerModal from "../modal/DeleteMessengerModal";
 import {
   bigDataChunkArrayForPagination,
   chunkArrayForSearchPaginationDispatch,
+  chunkArray
 } from "../../../helper";
 import _ from "lodash";
 
@@ -47,6 +49,9 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
   ] = useState(0);
   const [messengerListCurrentPage, setMessengerListCurrentPage] = useState(0);
   const [searchPhrase, setSearchPhrase] = useState("");
+  const [selectedMessengerId, setSelectedMessengerId] = useState("");
+  const [selectedMessengerName, setSelectedMessengerName] = useState("");
+  const [isDeleteMessengerModalOpen, setIsDeleteMessengerModalOpen] = useState(false);
 
   useEffect(() => {
     if (!_.isNil(gAuthData) && gAuthData !== "" && !_.isNil(gAuthData.role)) {
@@ -84,13 +89,47 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
         encodeListPaginationDataCount,
         searchPhrase.toLowerCase()
       );
-      console.log('ggg', figure)
       setMessengerListSearchPagination(
+        figure
+      );
+    }
+    if(isDeleteMessengerModalOpen) {
+      const figure = chunkArray(
+        dispatchControlMessengerData,
+        encodeListPaginationDataCount
+      );
+      setMessengerListPagination(
         figure
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatchControlMessengerData, pageLoaded, messengerListCurrentPage]);
+
+  useEffect(() => {
+    if(dispatchControlMessengerData.length > 0 && dispatchControlCount > 0 && messengerListPagination.length > 0 && isDeleteMessengerModalOpen) {
+      const chunkCounts = messengerListPagination.map((res: any) => {
+        return Array.isArray(res.data) ? res!.data.length : 0;
+      })
+      const currentPaginationItemCount = chunkCounts.reduce(function(a: number, b: number) { return a + b; }, 0);
+      const isRecordRecordDeleted = currentPaginationItemCount > dispatchControlMessengerData.length
+      if(isRecordRecordDeleted) {
+        const isAllRecordLoaded = currentPaginationItemCount === dispatchControlCount
+        if(isAllRecordLoaded) {
+          const figure = chunkArray(
+            dispatchControlMessengerData,
+            encodeListPaginationDataCount
+          );
+          setMessengerListPagination(
+            figure
+          );
+        } else {
+          const toFetchCount = currentPaginationItemCount - dispatchControlMessengerData.length;
+          const urlVariables = `?limit=${toFetchCount}&skip=${currentPaginationItemCount}`;
+          getDispatchControlMessengers(urlVariables);
+        }
+      }
+    }
+  }, [dispatchControlMessengerData, messengerListPagination, dispatchControlCount])
 
   const alterPagination = (
     isAddition: boolean,
@@ -119,7 +158,6 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
         const limit =
           remainder === 0 ? encodeListPaginationDataCount : remainder;
         const urlVariables = `?limit=${limit}&skip=${toSkip}`;
-        console.log("puth 2", dispatchControlCount);
         getDispatchControlMessengers(urlVariables, value);
       }
     }
@@ -185,7 +223,7 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
           <span className="BasicLink">Print Receipt</span> |{" "}
           <span className="BasicLink">Print Proof</span> |{" "}
           <span className="BasicLink">Edit</span> |{" "}
-          <span className="BasicLink">Delete</span>
+          <span className="BasicLink" onClick={() => deleteMessenger(id, messengerName)}>Delete</span>
         </td>
       </tr>
     );
@@ -280,6 +318,7 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
       searchPhrase !== "" &&
       searchPhrase.length > 2
     ) {
+      console.log('complex', messengerListSearchPagination)
       return (
         <>
           <Table striped bordered hover>
@@ -308,6 +347,31 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
               )}
             </tbody>
           </Table>
+          <Pagination>
+            {messengerListSearchCurrentPage > 0 ? (
+              <>
+                <Pagination.First
+                  onClick={() => setMessengerListSearchCurrentPage(0)}
+                />
+                <Pagination.Prev
+                  onClick={() => setMessengerListSearchCurrentPage(messengerListSearchCurrentPage - 1)}
+                />
+              </>
+            ) : null}
+            <h3 style={{ marginLeft: "10px", marginRight: "10px" }}>
+              {messengerListSearchCurrentPage + 1} of {messengerListSearchPagination.length}
+            </h3>
+            {messengerListSearchCurrentPage + 1 < messengerListSearchPagination.length ? (
+              <>
+                <Pagination.Next
+                  onClick={() => setMessengerListSearchCurrentPage(messengerListSearchCurrentPage + 1)}
+                />
+                <Pagination.Last
+                    onClick={() => setMessengerListSearchCurrentPage(messengerListSearchPagination.length - 1)}
+                />
+              </>
+            ) : null}
+          </Pagination>
         </>
       );
     } else if (
@@ -326,6 +390,13 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
     }
   };
 
+  const deleteMessenger = (messengerId: string, messengerName: string) => {
+    triggerModalTopAlert(false, "", "");
+    setSelectedMessengerId(messengerId);
+    setSelectedMessengerName(messengerName);
+    setIsDeleteMessengerModalOpen(true);
+  };
+
   return (
     <>
       <Form.Group controlId="searchEncodeList" style={{ marginTop: "25px" }}>
@@ -337,6 +408,14 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
         />
       </Form.Group>
       {renderDispatchControlMessengerTable()}
+      <DeleteMessengerModal
+        selectedMessengerName={selectedMessengerName}
+        selectedMessengerId={selectedMessengerId}
+        isDeleteMessengerModalOpen={isDeleteMessengerModalOpen}
+        setIsDeleteMessengerModalOpen={(res: boolean) =>
+          setIsDeleteMessengerModalOpen(res)
+        }
+      />
     </>
   );
 };

@@ -18,7 +18,6 @@ router.get("/", async (req, res) => {
   
   try {
     const getAllDispatchControlMessenger = await DispatchControlMessenger.find(condition).skip(skip).limit(limit);
-    console.log('smile', getAllDispatchControlMessenger)
     res.json({
       dbRes: getAllDispatchControlMessenger,
       isSuccess: true
