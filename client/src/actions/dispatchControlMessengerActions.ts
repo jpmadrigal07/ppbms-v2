@@ -5,6 +5,7 @@ import {
   ADD_DISPATCH_CONTROL_MESSENGER,
   TOP_ALERT,
   PAGE_LOADED_MESSENGERS,
+  OVERWRITE_PAGE_LOADED_MESSENGERS,
   DELETE_DISPATCH_CONTROL_MESSENGER,
   SECOND_MODAL_TOP_ALERT
 } from "./types";
@@ -118,5 +119,12 @@ export const setDispatchControlMessengerLoader = (type: string, isLoading: boole
   return {
     type: DISPATCH_CONTROL_MESSENGER_LOADER,
     payload: { type, isLoading }
+  };
+};
+
+export const setDispatchControlMessengerLoadedPage = (array: number[]) => {
+  return {
+    type: OVERWRITE_PAGE_LOADED_MESSENGERS,
+    payload: array
   };
 };

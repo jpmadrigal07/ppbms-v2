@@ -326,7 +326,8 @@ export interface I_MessengerListViewProps {
     gAuthData: any,
     getDashboardCount: Function,
     dispatchControlCount: number,
-    pageLoaded: number[]
+    pageLoaded: number[],
+    setDispatchControlMessengerLoadedPage: Function
 }
 
 export interface I_RecordModal {

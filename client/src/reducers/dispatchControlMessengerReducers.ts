@@ -3,6 +3,7 @@ import {
   ADD_DISPATCH_CONTROL_MESSENGER,
   DISPATCH_CONTROL_MESSENGER_LOADER,
   PAGE_LOADED_MESSENGERS,
+  OVERWRITE_PAGE_LOADED_MESSENGERS,
   DELETE_DISPATCH_CONTROL_MESSENGER
 } from "../actions/types";
 import { I_DispatchControlMessenger, I_ReduxAction } from "../interfaces";
@@ -37,6 +38,12 @@ export default function (state = initialState, action: I_ReduxAction) {
       return {
         ...state,
         pageLoaded: _.sortBy([...state.pageLoaded, payload]),
+        isLoading: false
+      };
+    case OVERWRITE_PAGE_LOADED_MESSENGERS:
+      return {
+        ...state,
+        pageLoaded: payload,
         isLoading: false
       };
     case DISPATCH_CONTROL_MESSENGER_LOADER:
