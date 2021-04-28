@@ -1,0 +1,24 @@
+.BasicLink {
+    cursor: pointer;
+    color: blue;
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.Truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media print {
+    .SampleClass {
+        position: absolute;
+        left: 0;
+        top: 0;
+        margin: 0;
+        padding: 0;
+        overflow: visible!important;
+    }
+}

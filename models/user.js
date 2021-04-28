@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 // CREATE DB SCHEMA OF USERS
-const User = new Schema({
+const user = new Schema({
     username: {
         type: String,
         unique:true,
@@ -20,21 +20,10 @@ const User = new Schema({
         type:String,
         required:[true, 'This Field is required']
     },
-    email:{
-        type:String,
-        unique:true,
-        required:[true, 'This Field is required']
-    },
-    gender:{
-        type:String,
-        enum:['Male','Female'],
-        default:"Male"
-    },
-    profilePicture: String,
     role:{
         type:String,
-        enum:['Admin','Sub Admin','Subscriber','Visitor'],
-        default:"Visitor"
+        enum:['Admin','Sub Admin'],
+        default:"Sub Admin"
     },
     isBlocked:{
         type:Boolean,
@@ -50,4 +39,4 @@ const User = new Schema({
     }
 });
 
-module.exports = mongoose.model('User', User);
+module.exports = mongoose.model('User', user);
