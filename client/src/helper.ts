@@ -84,23 +84,26 @@ export const chunkArrayForSearchPaginationDispatch = (
     })
     .filter((messengerListData: I_DispatchControlMessenger) => !_.isNil(messengerListData));
 
-  return chunk(array, size);
+  return chunk(array, size, null);
 };
 
 export const chunkArray = (
   data: any,
   size: number,
+  pageLoaded: number[]
 ) => {
-  return chunk(data, size);
+  return chunk(data, size, pageLoaded);
 };
 
-const chunk = (arr: any, len: any) => {
+const chunk = (arr: any, len: any, pageLoaded: number[] | null) => {
   let chunks = [],
       i = 0,
       n = arr.length,
       index = 0;
+
   while (i < n) {
-    chunks.push({pageNumber: index, data: arr.slice(i, i += len)});
+    const pageNumber = pageLoaded ? pageLoaded[index] : index
+    chunks.push({pageNumber, data: arr.slice(i, i += len)});
     index++;
   }
   return chunks;

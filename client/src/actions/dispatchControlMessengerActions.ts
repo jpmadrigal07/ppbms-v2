@@ -29,6 +29,8 @@ export const getDispatchControlMessengers = (variables: string | undefined, page
             payload: pageNumber
           });
         }
+      } else {
+        dispatch(setDispatchControlMessengerLoader("list", false));
       }
     })
     .catch((err) => {

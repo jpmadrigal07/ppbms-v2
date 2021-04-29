@@ -7,7 +7,9 @@ import {
   DELETE_DISPATCH_CONTROL_MESSENGER
 } from "../actions/types";
 import { I_DispatchControlMessenger, I_ReduxAction } from "../interfaces";
-import _ from "lodash";
+import sortBy from "lodash/sortBy";
+import uniqBy from "lodash/uniqBy";
+import orderBy from "lodash/orderBy";
 
 const initialState = {
   isLoading: false,
@@ -25,8 +27,7 @@ export default function (state = initialState, action: I_ReduxAction) {
     case GET_DISPATCH_CONTROL_MESSENGERS:
       return {
         ...state,
-        data: _.sortBy(_.uniqBy([...state.data, ...payload.dbRes], '_id'), ['createdAt']),
-        isLoading: false
+        data: orderBy(uniqBy([...state.data, ...payload.dbRes], '_id'), ['createdAt'], ['desc']),
       };
     case ADD_DISPATCH_CONTROL_MESSENGER:
       return {
@@ -37,7 +38,7 @@ export default function (state = initialState, action: I_ReduxAction) {
     case PAGE_LOADED_MESSENGERS:
       return {
         ...state,
-        pageLoaded: _.sortBy([...state.pageLoaded, payload]),
+        pageLoaded: sortBy([...state.pageLoaded, payload]),
         isLoading: false
       };
     case OVERWRITE_PAGE_LOADED_MESSENGERS:

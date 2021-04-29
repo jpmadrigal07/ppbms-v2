@@ -71,7 +71,6 @@ const MasterListView = (props: I_MasterListViewProps) => {
   }, [gAuthData]);
 
   useEffect(() => {
-    console.log('gggra 1')
     const recordEncodeListIds = _.uniq(
       recordData.map((res) => {
         return res.encodeListId;
@@ -91,7 +90,6 @@ const MasterListView = (props: I_MasterListViewProps) => {
   }, [encodeListData, isRecordLoading]);
 
   useEffect(() => {
-    console.log('gggra 2')
     const pageLoadedLoading = pageLoaded.includes(encodeListCurrentPage);
     if (
       currentPage === "Master Lists" &&
@@ -439,7 +437,6 @@ const MasterListView = (props: I_MasterListViewProps) => {
           className="form-control"
           placeholder="Search by Date Imported (MM/DD/YYYY)"
           autoComplete="off"
-          disabled={isEncodeListLoading}
           onChange={(e) => setSearchPhrase(e.target.value)}
         />
       </Form.Group>

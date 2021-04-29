@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
           $exists: false
       }
   }
-  
+
   try {
     const getAllDispatchControlMessenger = await DispatchControlMessenger.find(condition).skip(skip).limit(limit);
     res.json({

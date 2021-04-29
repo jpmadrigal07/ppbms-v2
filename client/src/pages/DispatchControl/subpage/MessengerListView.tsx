@@ -85,8 +85,7 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
         currentPage === "Dispatch Control" &&
         dispatchControlMessengerData.length > 0 &&
         searchPhrase !== "" &&
-        !isDispatchControlMessengerLoading &&
-        !isDeleteMessengerModalOpen
+        !isDispatchControlMessengerLoading
       ) {
         const figure = chunkArrayForSearchPaginationDispatch(
           dispatchControlMessengerData,
@@ -100,7 +99,8 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
       if(isDeleteMessengerModalOpen) {
         const figure = chunkArray(
           dispatchControlMessengerData,
-          encodeListPaginationDataCount
+          encodeListPaginationDataCount,
+          pageLoaded
         );
         setMessengerListPagination(
           figure
@@ -108,7 +108,7 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatchControlMessengerData, pageLoaded, messengerListCurrentPage]);
+  }, [dispatchControlMessengerData, pageLoaded, messengerListCurrentPage, isDispatchControlMessengerLoading]);
 
   useEffect(() => {
     if(dispatchControlMessengerData.length > 0 && dispatchControlCount > 0 && messengerListPagination.length > 0 && isDeleteMessengerModalOpen) {
@@ -129,7 +129,6 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
     }
     if(pageLoaded.length > 0 && messengerListPagination.length > 0) {
       if(pageLoaded.length > messengerListPagination.length) {
-        // console.log('bwakanangina')
         const messengerListPaginationArrLength = messengerListPagination.length-1;
         const pageLoadedNew = pageLoaded.map((res: number, index: number) => {
           return messengerListPaginationArrLength >= index ? res : undefined
@@ -146,6 +145,23 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
     }
   }, [dispatchControlMessengerData, messengerListPagination, dispatchControlCount])
 
+  useEffect(() => {
+    if(dispatchControlMessengerData.length > 0 && messengerListSearchPagination.length > 0 && isDeleteMessengerModalOpen) {
+      const searchPaginationData = dispatchControlMessengerData.map((messengerData: I_DispatchControlMessenger) => {
+        const name = messengerData.name.toLowerCase();
+        const address = messengerData.address.toLowerCase();
+        const preparedBy = messengerData.preparedBy.toLowerCase();
+        const result = name.includes(searchPhrase) || address.includes(searchPhrase) || preparedBy.includes(searchPhrase);
+        return result ? messengerData : null; 
+      }).filter((res: any) => res);
+      const searchPaginationNewCount = Math.ceil(searchPaginationData.length/encodeListPaginationDataCount)
+      if(messengerListSearchPagination.length > searchPaginationNewCount) {
+        const removedPages = messengerListSearchPagination.length - searchPaginationNewCount
+        setMessengerListSearchCurrentPage(messengerListSearchCurrentPage - removedPages)
+      }
+    }
+  }, [dispatchControlMessengerData, messengerListSearchPagination])
+
   const alterPagination = (
     isAddition: boolean,
     isLastPage: boolean,
@@ -159,9 +175,9 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
 
       const actualPageNumber = alterPageNumberBy;
       const isPageLoaded = pageLoaded.includes(actualPageNumber);
-      const toSkip = actualPageNumber * encodeListPaginationDataCount;
       if (!isPageLoaded) {
-        const urlVariables = `?limit=${encodeListPaginationDataCount}&skip=${toSkip}`;
+        const toSkip = dispatchControlCount - ((actualPageNumber+1) * encodeListPaginationDataCount);
+        const urlVariables = `?limit=${encodeListPaginationDataCount}&skip=${toSkip < 0 ? 0 : toSkip}`;
         getDispatchControlMessengers(urlVariables, actualPageNumber);
       }
     } else {
@@ -169,10 +185,8 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
       const isPageLoaded = pageLoaded.includes(value);
       if (!isPageLoaded) {
         const remainder = dispatchControlCount % encodeListPaginationDataCount;
-        const toSkip = dispatchControlCount - remainder;
-        const limit =
-          remainder === 0 ? encodeListPaginationDataCount : remainder;
-        const urlVariables = `?limit=${limit}&skip=${toSkip}`;
+        const limit = remainder === 0 ? encodeListPaginationDataCount : remainder;
+        const urlVariables = `?limit=${limit}&skip=0`;
         getDispatchControlMessengers(urlVariables, value);
       }
     }
@@ -180,12 +194,13 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
 
   useEffect(() => {
     setMessengerListCurrentPage(0);
+
     if (
       dispatchControlMessengerData.length > 0 &&
       searchPhrase !== "" &&
       searchPhrase.length > 2
     ) {
-      const condition = `{"$or": [{"name": { "$regex": "${searchPhrase}" }}, {"address": { "$regex":"${searchPhrase}"}}, {"preparedBy": { "$regex":"${searchPhrase}"}}]}`;
+      const condition = `{"$or": [{"name": { "$regex": "${searchPhrase}", "$options": "i" }}, {"address": { "$regex": "${searchPhrase}", "$options": "i" }}, {"preparedBy": { "$regex": "${searchPhrase}", "$options": "i" }}]}`;
       const urlVariables = `?limit=0&condition=${encodeURIComponent(
         condition
       )}`;
@@ -199,14 +214,16 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
     // This variable is the query variables that is being pass to the api for condition
     if (
       currentPage === "Dispatch Control" &&
-      dispatchControlMessengerData.length === 0
+      dispatchControlMessengerData.length === 0 &&
+      dispatchControlCount > 0
     ) {
-      const urlVariables = `?limit=${encodeListPaginationDataCount}`;
+      const toSkip = dispatchControlCount-encodeListPaginationDataCount;
+      const urlVariables = `?limit=${encodeListPaginationDataCount}&skip=${toSkip}`;
       const newPageNumber = 0;
       getDispatchControlMessengers(urlVariables, newPageNumber);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
+  }, [currentPage, dispatchControlCount]);
 
   useEffect(() => {
     if (dispatchControlCount > 0) {
@@ -333,7 +350,6 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
       searchPhrase !== "" &&
       searchPhrase.length > 2
     ) {
-      console.log('complex', messengerListSearchPagination)
       return (
         <>
           <Table striped bordered hover>
@@ -396,8 +412,6 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
     ) {
       return <Spinner animation="grow" />;
     } else if (
-      !isDispatchControlMessengerLoading ||
-      messengerListPagination.length > 0 ||
       !isDispatchControlMessengerLoading ||
       messengerListPagination.length > 0
     ) {
