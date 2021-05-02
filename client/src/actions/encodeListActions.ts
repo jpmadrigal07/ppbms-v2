@@ -8,8 +8,7 @@ import {
   ADD_DASHBOARD_COUNT,
   PAGE_LOADED_ENCODE_LIST,
   TOP_ALERT,
-  GET_ENCODE_LIST_COUNT,
-  GET_ENCODE_LIST_RECORD_COUNT
+  OVERWRITE_PAGE_LOADED_ENCODE_LIST
 } from "./types";
 import _ from "lodash";
 
@@ -39,6 +38,8 @@ export const getEncodeList = (variables: string | undefined, pageNumber: number 
             payload: pageNumber
           });
         }
+      } else {
+        dispatch(setEncodeListLoader("list", false));
       }
     })
     .catch((err) => {
@@ -138,3 +139,11 @@ export const setEncodeListLoader = (type: string, isLoading: boolean) => {
     payload: { type, isLoading },
   };
 };
+
+export const setEncodeListLoadedPage = (array: number[]) => {
+  return {
+    type: OVERWRITE_PAGE_LOADED_ENCODE_LIST,
+    payload: array
+  };
+};
+

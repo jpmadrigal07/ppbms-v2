@@ -32,7 +32,7 @@ export default function (state = initialState, action: I_ReduxAction) {
     case ADD_DISPATCH_CONTROL_MESSENGER:
       return {
         ...state,
-        data: [payload.dbRes, ...state.data],
+        data: orderBy(uniqBy([...state.data, payload.dbRes], '_id'), ['createdAt'], ['desc']),
         isAddLoading: false
       };
     case PAGE_LOADED_MESSENGERS:

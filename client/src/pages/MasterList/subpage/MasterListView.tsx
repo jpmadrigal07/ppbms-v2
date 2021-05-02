@@ -8,10 +8,11 @@ import {
 } from "../../../interfaces";
 import "../MasterList.scss";
 import { bulkDeleteRecord } from "../../../actions/recordActions";
-import { getEncodeList } from "../../../actions/encodeListActions";
+import { getEncodeList, setEncodeListLoadedPage } from "../../../actions/encodeListActions";
 import {
   bigDataChunkArrayForPagination,
   chunkArrayForSearchPagination,
+  chunkArray
 } from "../../../helper";
 import { encodeListPaginationDataCount } from "../../../constant";
 import { triggerModalTopAlert } from "../../../actions/modalTopAlertActions";
@@ -35,6 +36,8 @@ const MasterListView = (props: I_MasterListViewProps) => {
     currentPage,
     pageLoaded,
     gAuthData,
+    setEncodeListLoadedPage,
+    currentTab
   } = props;
 
   const [encodeListPaginationCount, setEncodeListPaginationCount] = useState(0);
@@ -90,48 +93,68 @@ const MasterListView = (props: I_MasterListViewProps) => {
   }, [encodeListData, isRecordLoading]);
 
   useEffect(() => {
-    const pageLoadedLoading = pageLoaded.includes(encodeListCurrentPage);
-    if (
-      currentPage === "Master Lists" &&
-      encodeListData.length > 0 &&
-      searchPhrase === "" &&
-      !isEncodeListLoading &&
-      pageLoadedLoading
-    ) {
-      const pagination = bigDataChunkArrayForPagination(
+    if(currentTab === "view") {
+      if(pageLoaded.length > 0) {
+        const pageLoadedLoading = pageLoaded.includes(encodeListCurrentPage);
+        if (
+          currentPage === "Master Lists" &&
+          encodeListData.length > 0 &&
+          searchPhrase === "" &&
+          !isEncodeListLoading &&
+          pageLoadedLoading
+        ) {
+          const pagination = bigDataChunkArrayForPagination(
+            encodeListData,
+            encodeListPagination,
+            pageLoaded.slice(-1).pop(),
+            encodeListCurrentPage,
+            pageLoaded.findIndex((res: number) => res === encodeListCurrentPage)
+          );
+          setEncodeListPagination(pagination);
+        } else if (
+          currentPage === "Master Lists" &&
+          encodeListData.length > 0 &&
+          searchPhrase !== "" &&
+          !isEncodeListLoading
+        ) {
+          setEncodeListSearchPagination(
+            chunkArrayForSearchPagination(
+              encodeListData,
+              encodeListPaginationDataCount,
+              searchPhrase
+            )
+          );
+        }
+      }
+    } else {
+      if(encodeListCurrentPage !== 0) {
+        setEncodeListCurrentPage(0)
+      }
+      if(pageLoaded.length > 1) {
+        setEncodeListLoadedPage([0])
+      }
+      const figure = chunkArray(
         encodeListData,
-        encodeListPagination,
-        pageLoaded.slice(-1).pop(),
-        encodeListCurrentPage,
-        pageLoaded.findIndex((res: number) => res === encodeListCurrentPage)
-      );
-      setEncodeListPagination(pagination);
-    } else if (
-      currentPage === "Master Lists" &&
-      encodeListData.length > 0 &&
-      searchPhrase !== "" &&
-      !isEncodeListLoading
-    ) {
-      setEncodeListSearchPagination(
-        chunkArrayForSearchPagination(
-          encodeListData,
-          encodeListPaginationDataCount,
-          searchPhrase
-        )
+        encodeListPaginationDataCount,
+        pageLoaded
+      )
+      setEncodeListPagination(
+        figure
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [encodeListData, pageLoaded, encodeListCurrentPage]);
+  }, [encodeListData, pageLoaded, encodeListCurrentPage, isEncodeListLoading]);
 
   useEffect(() => {
     // This variable is the query variables that is being pass to the api for condition
-    if (currentPage === "Master Lists" && encodeListData.length === 0) {
-      const urlVariables = `?limit=${encodeListPaginationDataCount}`;
+    if (currentPage === "Master Lists" && encodeListData.length === 0 && importedListCount > 0 && currentTab === "view") {
+      const toSkip = importedListCount-encodeListPaginationDataCount;
+      const urlVariables = `?limit=${encodeListPaginationDataCount}&skip=${toSkip}`;
       const newPageNumber = 0;
       getEncodeList(urlVariables, newPageNumber);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
+  }, [currentPage, importedListCount]);
 
   useEffect(() => {
     if (importedListCount) {
@@ -180,9 +203,9 @@ const MasterListView = (props: I_MasterListViewProps) => {
 
       const actualPageNumber = alterPageNumberBy;
       const isPageLoaded = pageLoaded.includes(actualPageNumber);
-      const toSkip = actualPageNumber * encodeListPaginationDataCount;
       if (!isPageLoaded) {
-        const urlVariables = `?limit=${encodeListPaginationDataCount}&skip=${toSkip}`;
+        const toSkip = importedListCount - ((actualPageNumber+1) * encodeListPaginationDataCount);
+        const urlVariables = `?limit=${encodeListPaginationDataCount}&skip=${toSkip < 0 ? 0 : toSkip}`;
         getEncodeList(urlVariables, actualPageNumber, toSkip);
       }
     } else {
@@ -190,11 +213,9 @@ const MasterListView = (props: I_MasterListViewProps) => {
       const isPageLoaded = pageLoaded.includes(value);
       if (!isPageLoaded) {
         const remainder = importedListCount % encodeListPaginationDataCount;
-        const toSkip = importedListCount - remainder;
-        const limit =
-          remainder === 0 ? encodeListPaginationDataCount : remainder;
-        const urlVariables = `?limit=${limit}&skip=${toSkip}`;
-        getEncodeList(urlVariables, value, toSkip);
+        const limit = remainder === 0 ? encodeListPaginationDataCount : remainder;
+        const urlVariables = `?limit=${limit}&skip=0`;
+        getEncodeList(urlVariables, value);
       }
     }
   };
@@ -477,4 +498,5 @@ export default connect(mapStateToProps, {
   getEncodeList,
   bulkDeleteRecord,
   triggerModalTopAlert,
+  setEncodeListLoadedPage
 })(MasterListView);

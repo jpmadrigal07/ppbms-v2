@@ -314,7 +314,9 @@ export interface I_MasterListViewProps {
     currentPage: string,
     pageLoaded: number[],
     getDashboardCount: Function,
-    gAuthData: any
+    gAuthData: any,
+    setEncodeListLoadedPage: Function,
+    currentTab: string
 }
 
 export interface I_MessengerListViewProps {
@@ -327,7 +329,8 @@ export interface I_MessengerListViewProps {
     getDashboardCount: Function,
     dispatchControlCount: number,
     pageLoaded: number[],
-    setDispatchControlMessengerLoadedPage: Function
+    setDispatchControlMessengerLoadedPage: Function,
+    currentTab: string
 }
 
 export interface I_RecordModal {

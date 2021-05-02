@@ -36,8 +36,11 @@ const Import = (props: I_ImportProps) => {
     const encodeList = encodeListData.find(
       (data) => data.fileName === file?.name
     );
-    if (!_.isNil(encodeList) && !_.isNil(file)) {
-      uploadExcelFile(encodeList._id, file, barcodeMiddleText);
+    const record = recordData.find(
+      (data) => data.encodeListId === encodeList?._id
+    );
+    if (!record && !_.isNil(file)) {
+      uploadExcelFile(encodeList!._id, file, barcodeMiddleText);
     }
   }, [encodeListData]);
 

@@ -8,7 +8,8 @@ import {
   UPDATE_RECORD,
   SECOND_MODAL_TOP_ALERT,
   DELETE_RECORD,
-  ADD_DASHBOARD_COUNT
+  ADD_DASHBOARD_COUNT,
+  UPDATE_LATEST_ENCODE_LIST_COUNT
 } from "./types";
 import _ from "lodash";
 
@@ -86,6 +87,10 @@ export const uploadExcelFile = (encodeListId: string, file: string, barcodeMiddl
         dispatch({
           type: ADD_RECORD,
           payload: res.data.dbRes,
+        });
+        dispatch({
+          type: UPDATE_LATEST_ENCODE_LIST_COUNT,
+          payload: res.data.dbRes.length,
         });
         dispatch({
           type: TOP_ALERT,

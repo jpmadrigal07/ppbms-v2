@@ -30,7 +30,8 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
     getDashboardCount,
     dispatchControlCount,
     pageLoaded,
-    setDispatchControlMessengerLoadedPage
+    setDispatchControlMessengerLoadedPage,
+    currentTab
   } = props;
 
   const [
@@ -63,49 +64,66 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
   }, [gAuthData]);
 
   useEffect(() => {
-    if(pageLoaded.length > 0) {
-      const pageLoadedLoading = pageLoaded.includes(messengerListCurrentPage);
-      if (
-        currentPage === "Dispatch Control" &&
-        dispatchControlMessengerData.length > 0 &&
-        searchPhrase === "" &&
-        !isDispatchControlMessengerLoading &&
-        pageLoadedLoading &&
-        !isDeleteMessengerModalOpen
-      ) {
-        const pagination = bigDataChunkArrayForPagination(
-          dispatchControlMessengerData,
-          messengerListPagination,
-          pageLoaded.slice(-1).pop(),
-          messengerListCurrentPage,
-          pageLoaded.findIndex((res: number) => res === messengerListCurrentPage)
-        );
-        setMessengerListPagination(pagination);
-      } else if (
-        currentPage === "Dispatch Control" &&
-        dispatchControlMessengerData.length > 0 &&
-        searchPhrase !== "" &&
-        !isDispatchControlMessengerLoading
-      ) {
-        const figure = chunkArrayForSearchPaginationDispatch(
-          dispatchControlMessengerData,
-          encodeListPaginationDataCount,
-          searchPhrase.toLowerCase()
-        );
-        setMessengerListSearchPagination(
-          figure
-        );
+    if(currentTab === "lists") {
+      if(pageLoaded.length > 0) {
+        const pageLoadedLoading = pageLoaded.includes(messengerListCurrentPage);
+        if (
+          currentPage === "Dispatch Control" &&
+          dispatchControlMessengerData.length > 0 &&
+          searchPhrase === "" &&
+          !isDispatchControlMessengerLoading &&
+          pageLoadedLoading &&
+          !isDeleteMessengerModalOpen
+        ) {
+          const pagination = bigDataChunkArrayForPagination(
+            dispatchControlMessengerData,
+            messengerListPagination,
+            pageLoaded.slice(-1).pop(),
+            messengerListCurrentPage,
+            pageLoaded.findIndex((res: number) => res === messengerListCurrentPage),
+          );
+          setMessengerListPagination(pagination);
+        } else if (
+          currentPage === "Dispatch Control" &&
+          dispatchControlMessengerData.length > 0 &&
+          searchPhrase !== "" &&
+          !isDispatchControlMessengerLoading
+        ) {
+          const figure = chunkArrayForSearchPaginationDispatch(
+            dispatchControlMessengerData,
+            encodeListPaginationDataCount,
+            searchPhrase.toLowerCase()
+          );
+          setMessengerListSearchPagination(
+            figure
+          );
+        }
+        if(isDeleteMessengerModalOpen) {
+          const figure = chunkArray(
+            dispatchControlMessengerData,
+            encodeListPaginationDataCount,
+            pageLoaded
+          );
+          setMessengerListPagination(
+            figure
+          );
+        }
       }
-      if(isDeleteMessengerModalOpen) {
-        const figure = chunkArray(
-          dispatchControlMessengerData,
-          encodeListPaginationDataCount,
-          pageLoaded
-        );
-        setMessengerListPagination(
-          figure
-        );
+    } else {
+      if(messengerListCurrentPage !== 0) {
+        setMessengerListCurrentPage(0)
       }
+      if(pageLoaded.length > 1) {
+        setDispatchControlMessengerLoadedPage([0])
+      }
+      const figure = chunkArray(
+        dispatchControlMessengerData,
+        encodeListPaginationDataCount,
+        pageLoaded
+      )
+      setMessengerListPagination(
+        figure
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatchControlMessengerData, pageLoaded, messengerListCurrentPage, isDispatchControlMessengerLoading]);
@@ -215,7 +233,8 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
     if (
       currentPage === "Dispatch Control" &&
       dispatchControlMessengerData.length === 0 &&
-      dispatchControlCount > 0
+      dispatchControlCount > 0 &&
+      currentTab === "lists"
     ) {
       const toSkip = dispatchControlCount-encodeListPaginationDataCount;
       const urlVariables = `?limit=${encodeListPaginationDataCount}&skip=${toSkip}`;

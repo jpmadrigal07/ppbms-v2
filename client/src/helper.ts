@@ -3,14 +3,13 @@ import { encodeListPaginationDataCount } from "./constant";
 import _ from "lodash";
 import { I_DispatchControlMessenger, I_EncodeList } from "./interfaces";
 import moment from "moment";
-import { isNumber } from "util";
 
 export const bigDataChunkArrayForPagination = (
   updatedData: any,
   currentPaginationData: any,
   lastPageNumber: number | undefined,
   currentPageNumber: number,
-  currentPageNumberIndex: number
+  currentPageNumberIndex: number,
 ) => {
   const currentPaginationCount = currentPaginationData.length;
   const lastPageNumberG = !_.isNil(lastPageNumber) ? lastPageNumber : 0;
