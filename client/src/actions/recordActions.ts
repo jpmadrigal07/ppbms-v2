@@ -173,10 +173,10 @@ export const bulkDeleteRecord = (ids: string[]) => (dispatch: Function) => {
     .delete(`/api/record/bulk`, { data: ids })
     .then((res) => {
       if (res.data.isSuccess) {
-        dispatch({
-          type: DELETE_RECORD,
-          payload: res.data.dbRes,
-        });
+        // dispatch({
+        //   type: DELETE_RECORD,
+        //   payload: res.data.dbRes,
+        // });
       } else {
         dispatch(setRecordLoader("delete", false));
         dispatch({

@@ -191,7 +191,7 @@ router.patch("/:id", async (req, res) => {
         const updateDispatchControlData = await DispatchControlData.findByIdAndUpdate(req.params.id, {
           $set: toUpdate,
           updatedAt: Date.now(),
-        });
+        }, {new: true});
         res.json({
           dbRes: updateDispatchControlData,
           isSuccess: true

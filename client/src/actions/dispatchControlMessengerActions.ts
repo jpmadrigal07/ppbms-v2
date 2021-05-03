@@ -7,6 +7,8 @@ import {
   PAGE_LOADED_MESSENGERS,
   OVERWRITE_PAGE_LOADED_MESSENGERS,
   DELETE_DISPATCH_CONTROL_MESSENGER,
+  MODAL_TOP_ALERT,
+  UPDATE_DISPATCH_CONTROL_MESSENGER,
   SECOND_MODAL_TOP_ALERT
 } from "./types";
 import _ from "lodash";
@@ -77,6 +79,47 @@ export const addDispatchControlMessenger = (
       dispatch(setDispatchControlMessengerLoader("add", false));
       dispatch({
         type: TOP_ALERT,
+        payload: { showAlert: true, message: err.message, type: "danger" },
+      });
+    });
+};
+
+export const updateDispatchControlMessenger = (
+  id: String,
+  name: string,
+  address: string,
+  preparedBy: string,
+  date: string
+) => (dispatch: Function) => {
+  dispatch(setDispatchControlMessengerLoader("update", true));
+  axios
+    .patch(`/api/dispatchControlMessenger/${id}`, { name, address, preparedBy, date })
+    .then((res) => {
+      if (res.data.isSuccess) {
+        dispatch({
+          type: UPDATE_DISPATCH_CONTROL_MESSENGER,
+          payload: res.data.dbRes,
+        });
+        dispatch({
+          type: MODAL_TOP_ALERT,
+          payload: {
+            showAlert: true,
+            message: "Successfully updated",
+            type: "success",
+          },
+        });
+      } else {
+        dispatch(setDispatchControlMessengerLoader("update", false));
+        dispatch({
+          type: MODAL_TOP_ALERT,
+          payload: { showAlert: true, message: res.data.dbRes, type: "danger" },
+        });
+      }
+    })
+    .catch((err) => {
+      dispatch(setDispatchControlMessengerLoader("update", false));
+      dispatch({
+        type: MODAL_TOP_ALERT,
         payload: { showAlert: true, message: err.message, type: "danger" },
       });
     });

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const EncodeList = require("../models/encodeList");
+const Record = require("../models/record");
 const _ = require("lodash");
 const moment = require("moment");
 
@@ -329,13 +330,19 @@ router.delete("/:id", async (req, res) => {
                     },
                 }
             );
+            const deleteRecord = await Record.updateMany({encodeListId: req.params.id}, {
+                    $set: {
+                        deletedAt: Date.now(),
+                    },
+                }
+            );
             res.json({
-                dbRes: deleteEncodeList,
+                dbRes: { deleteEncodeList, deleteRecord },
                 isSuccess: true,
             });
         } else {
             res.json({
-                dbRes: "Encode list is already deleted.",
+                dbRes: "Encode list is already deleted",
                 isSuccess: false,
             });
         }

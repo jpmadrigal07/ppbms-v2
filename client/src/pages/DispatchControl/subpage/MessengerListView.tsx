@@ -12,6 +12,7 @@ import { getDispatchControlMessengers, setDispatchControlMessengerLoadedPage } f
 import { encodeListPaginationDataCount } from "../../../constant";
 import { getDashboardCount } from "../../../actions/dashboardCountActions";
 import DeleteMessengerModal from "../modal/DeleteMessengerModal";
+import EditMessengerModal from "../modal/EditMessengerModal";
 import {
   bigDataChunkArrayForPagination,
   chunkArrayForSearchPaginationDispatch,
@@ -53,7 +54,11 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
   const [searchPhrase, setSearchPhrase] = useState("");
   const [selectedMessengerId, setSelectedMessengerId] = useState("");
   const [selectedMessengerName, setSelectedMessengerName] = useState("");
+  const [selectedMessengerPrepared, setSelectedMessengerPrepared] = useState("");
+  const [selectedMessengerAddress, setSelectedMessengerAddress] = useState("");
+  const [selectedMessengerDate, setSelectedMessengerDate] = useState("");
   const [isDeleteMessengerModalOpen, setIsDeleteMessengerModalOpen] = useState(false);
+  const [isEditMessengerModalOpen, setIsEditMessengerModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isNil(gAuthData) && gAuthData !== "" && !isNil(gAuthData.role)) {
@@ -64,7 +69,7 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
   }, [gAuthData]);
 
   useEffect(() => {
-    if(currentTab === "lists") {
+    if(currentTab === "lists" && !isEditMessengerModalOpen) {
       if(pageLoaded.length > 0) {
         const pageLoadedLoading = pageLoaded.includes(messengerListCurrentPage);
         if (
@@ -110,20 +115,33 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
         }
       }
     } else {
-      if(messengerListCurrentPage !== 0) {
-        setMessengerListCurrentPage(0)
+      if(currentTab === "addMessenger") {
+        if(messengerListCurrentPage !== 0) {
+          setMessengerListCurrentPage(0)
+        }
+        if(pageLoaded.length > 1) {
+          setDispatchControlMessengerLoadedPage([0])
+        }
       }
-      if(pageLoaded.length > 1) {
-        setDispatchControlMessengerLoadedPage([0])
+      if(searchPhrase === "") {
+        const figure = chunkArray(
+          dispatchControlMessengerData,
+          encodeListPaginationDataCount,
+          pageLoaded
+        )
+        setMessengerListPagination(
+          figure
+        );
+      } else {
+        const figure = chunkArrayForSearchPaginationDispatch(
+          dispatchControlMessengerData,
+          encodeListPaginationDataCount,
+          searchPhrase.toLowerCase()
+        );
+        setMessengerListSearchPagination(
+          figure
+        );
       }
-      const figure = chunkArray(
-        dispatchControlMessengerData,
-        encodeListPaginationDataCount,
-        pageLoaded
-      )
-      setMessengerListPagination(
-        figure
-      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatchControlMessengerData, pageLoaded, messengerListCurrentPage, isDispatchControlMessengerLoading]);
@@ -273,7 +291,7 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
           <span className="BasicLink">View Record</span> |{" "}
           <span className="BasicLink">Print Receipt</span> |{" "}
           <span className="BasicLink">Print Proof</span> |{" "}
-          <span className="BasicLink">Edit</span> |{" "}
+          <span className="BasicLink" onClick={() => editMessenger(id, messengerName, address, prepared, date)}>Edit</span> |{" "}
           <span className="BasicLink" onClick={() => deleteMessenger(id, messengerName)}>Delete</span>
         </td>
       </tr>
@@ -438,12 +456,23 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
     }
   };
 
+  const editMessenger = (messengerId: string, messengerName: string, address: string, prepared: string, date: string) => {
+    triggerModalTopAlert(false, "", "");
+    setSelectedMessengerId(messengerId);
+    setSelectedMessengerName(messengerName);
+    setSelectedMessengerAddress(address);
+    setSelectedMessengerPrepared(prepared);
+    setSelectedMessengerDate(date);
+    setIsEditMessengerModalOpen(true);
+  };
+
   const deleteMessenger = (messengerId: string, messengerName: string) => {
     triggerModalTopAlert(false, "", "");
     setSelectedMessengerId(messengerId);
     setSelectedMessengerName(messengerName);
     setIsDeleteMessengerModalOpen(true);
   };
+
 
   return (
     <>
@@ -456,6 +485,17 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
         />
       </Form.Group>
       {renderDispatchControlMessengerTable()}
+      <EditMessengerModal
+        selectedMessengerName={selectedMessengerName}
+        selectedMessengerId={selectedMessengerId}
+        selectedMessengerAddress={selectedMessengerAddress}
+        selectedMessengerPrepared={selectedMessengerPrepared}
+        selectedMessengerDate={selectedMessengerDate}
+        isEditMessengerModalOpen={isEditMessengerModalOpen}
+        setIsEditMessengerModalOpen={(res: boolean) =>
+          setIsEditMessengerModalOpen(res)
+        }
+      />
       <DeleteMessengerModal
         selectedMessengerName={selectedMessengerName}
         selectedMessengerId={selectedMessengerId}

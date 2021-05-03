@@ -366,6 +366,20 @@ export interface I_DeleteMessengerModal {
     triggerSecondModalTopAlert: Function
 }
 
+export interface I_EditMessengerModal {
+    selectedMessengerName: string,
+    selectedMessengerId: string,
+    selectedMessengerAddress: string,
+    selectedMessengerPrepared: string,
+    selectedMessengerDate: string,
+    isEditMessengerModalOpen: boolean,
+    setIsEditMessengerModalOpen: Function,
+    isMessengerEditLoading: boolean,
+    updateDispatchControlMessenger: Function,
+    messengerData: I_DispatchControlMessenger[],
+    triggerModalTopAlert: Function
+}
+
 export interface I_DeleteRecordModal {
     selectedRecordSubsName: string,
     selectedRecordId: string,

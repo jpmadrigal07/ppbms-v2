@@ -8,7 +8,9 @@ import {
   ADD_DASHBOARD_COUNT,
   PAGE_LOADED_ENCODE_LIST,
   TOP_ALERT,
-  OVERWRITE_PAGE_LOADED_ENCODE_LIST
+  OVERWRITE_PAGE_LOADED_ENCODE_LIST,
+  DELETE_DASHBOARD_COUNT,
+  DELETE_RECORD
 } from "./types";
 import _ from "lodash";
 
@@ -106,7 +108,15 @@ export const deleteEncodeList = (id: string) => (dispatch: Function) => {
       if (res.data.isSuccess) {
         dispatch({
           type: DELETE_ENCODE_LIST,
-          payload: res.data.dbRes,
+          payload: res.data.dbRes.deleteEncodeList,
+        });
+        dispatch({
+          type: DELETE_RECORD,
+          payload: { type: "bulk", encodeListId: res.data.dbRes.deleteEncodeList._id },
+        });
+        dispatch({
+          type: DELETE_DASHBOARD_COUNT,
+          payload: {type: "listData", count: res.data.dbRes.deleteRecord.nModified},
         });
         dispatch({
           type: MODAL_TOP_ALERT,

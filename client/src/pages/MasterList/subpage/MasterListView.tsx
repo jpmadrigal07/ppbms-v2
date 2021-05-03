@@ -20,6 +20,7 @@ import { getDashboardCount } from "../../../actions/dashboardCountActions";
 import RecordModal from "../modal/RecordModal";
 import DeleteEncodeListModal from "../modal/DeleteEncodeListModal";
 import _ from "lodash";
+import isNil from "lodash/isNil";
 import moment from "moment";
 
 const MasterListView = (props: I_MasterListViewProps) => {
@@ -74,21 +75,21 @@ const MasterListView = (props: I_MasterListViewProps) => {
   }, [gAuthData]);
 
   useEffect(() => {
-    const recordEncodeListIds = _.uniq(
-      recordData.map((res) => {
-        return res.encodeListId;
-      })
-    );
-    const encodeListIds = encodeListData.map((res) => {
-      return res._id;
-    });
-    if (recordEncodeListIds.length > encodeListIds.length && !isRecordLoading) {
-      const deletedEncodeList = recordEncodeListIds.filter(function (val) {
-        return encodeListIds.indexOf(val) === -1;
-      });
-      // KAILANGAN IMBESTIGAHAN TO KASI NAWAWALA YUNG DATA
-      bulkDeleteRecord(deletedEncodeList);
-    }
+    // const recordEncodeListIds = _.uniq(
+    //   recordData.map((res) => {
+    //     return res.encodeListId;
+    //   })
+    // );
+    // const encodeListIds = encodeListData.map((res) => {
+    //   return res._id;
+    // });
+    // if (recordEncodeListIds.length > encodeListIds.length && !isRecordLoading) {
+    //   const deletedEncodeList = recordEncodeListIds.filter(function (val) {
+    //     return encodeListIds.indexOf(val) === -1;
+    //   });
+    //   // KAILANGAN IMBESTIGAHAN TO KASI NAWAWALA YUNG DATA
+    //   bulkDeleteRecord(deletedEncodeList);
+    // }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [encodeListData, isRecordLoading]);
 
@@ -101,7 +102,8 @@ const MasterListView = (props: I_MasterListViewProps) => {
           encodeListData.length > 0 &&
           searchPhrase === "" &&
           !isEncodeListLoading &&
-          pageLoadedLoading
+          pageLoadedLoading &&
+          !isDeleteEncodeListModalOpen
         ) {
           const pagination = bigDataChunkArrayForPagination(
             encodeListData,
@@ -123,6 +125,16 @@ const MasterListView = (props: I_MasterListViewProps) => {
               encodeListPaginationDataCount,
               searchPhrase
             )
+          );
+        }
+        if(isDeleteEncodeListModalOpen) {
+          const figure = chunkArray(
+            encodeListData,
+            encodeListPaginationDataCount,
+            pageLoaded
+          );
+          setEncodeListPagination(
+            figure
           );
         }
       }
@@ -163,6 +175,41 @@ const MasterListView = (props: I_MasterListViewProps) => {
       );
     }
   }, [importedListCount]);
+
+  useEffect(() => {
+    if(encodeListData.length > 0 && importedListCount > 0 && encodeListPagination.length > 0 && isDeleteEncodeListModalOpen) {
+      const chunkCounts = encodeListPagination.map((res: any) => {
+        return Array.isArray(res.data) ? res!.data.length : 0;
+      })
+      const currentPaginationItemCount = chunkCounts.reduce(function(a: number, b: number) { return a + b; }, 0);
+      const isRecordRecordDeleted = currentPaginationItemCount > encodeListData.length
+      if(isRecordRecordDeleted) {
+        const isAllRecordLoaded = currentPaginationItemCount === importedListCount
+        if(!isAllRecordLoaded) {
+          const toFetchCount = currentPaginationItemCount - encodeListData.length;
+          const toSkip = currentPaginationItemCount-1;
+          const urlVariables = `?limit=${toFetchCount}&skip=${toSkip}`;
+          getEncodeList(urlVariables);
+        }
+      }
+    }
+    if(pageLoaded.length > 0 && encodeListPagination.length > 0) {
+      if(pageLoaded.length > encodeListPagination.length) {
+        const messengerListPaginationArrLength = encodeListPagination.length-1;
+        const pageLoadedNew = pageLoaded.map((res: number, index: number) => {
+          return messengerListPaginationArrLength >= index ? res : undefined
+        }).filter((res: any) => !isNil(res));
+        if(pageLoaded.length - 1 === encodeListCurrentPage) {
+          setEncodeListCurrentPage(messengerListPaginationArrLength)
+        }
+        setEncodeListLoadedPage(pageLoadedNew);
+        const newPaginationMaxCount = encodeListPaginationCount - (pageLoaded.length - encodeListPagination.length) 
+        setEncodeListPaginationCount(
+          newPaginationMaxCount
+        );
+      }
+    }
+  }, [encodeListData, encodeListPagination, importedListCount])
 
   useEffect(() => {
     setEncodeListCurrentPage(0);
