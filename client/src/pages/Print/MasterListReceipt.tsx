@@ -10,7 +10,7 @@ import "./Receipt.scss";
 import _ from "lodash";
 import JsBarcode from "jsbarcode";
 
-const Receipt = (props: I_ReceiptProps) => {
+const MasterListReceipt = (props: I_ReceiptProps) => {
   const { recordData, getRecord, gSetCurrentPage, gAuthData } = props;
 
   const history = useHistory();
@@ -251,4 +251,4 @@ const mapStateToProps = (gState: I_GlobalState) => ({
 export default connect(mapStateToProps, {
   getRecord,
   gSetCurrentPage,
-})(Receipt);
+})(MasterListReceipt);

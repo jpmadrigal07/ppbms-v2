@@ -50,7 +50,7 @@ const AddMessenger = (props: I_AddMessengerProps) => {
     } else {
       try {
         await addDispatchControlMessenger(name, address, preparedBy, date);
-      } catch (err) {
+      } catch (err: any) {
         triggerTopAlert(true, err.message, "danger");
       }
     }
