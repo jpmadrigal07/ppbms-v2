@@ -1,0 +1,23 @@
+Name: R11213 (R = Relase | 1121 = Month and Year | 3 = Week)
+Version: 0.0.0
+
+Planned Release:
+
+• Ascending Pagination on Master List
+• Search Pagination on Master List
+• Dispatch Control Print Receipt
+• Dispatch Control Print Proof
+
+Actual Release:
+
+• Sample 1
+• Sample 2
+• Sample 3
+• Sample 4
+
+Added Release:
+
+• Sample 1
+• Sample 2
+• Sample 3
+• Sample 4
