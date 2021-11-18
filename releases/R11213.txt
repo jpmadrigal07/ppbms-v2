@@ -3,7 +3,7 @@ Version: 0.0.0
 
 Planned Release:
 
-• Ascending Pagination on Master List
+• Descending Pagination on Master List
 • Search Pagination on Master List
 • Dispatch Control Print Receipt
 • Dispatch Control Print Proof
