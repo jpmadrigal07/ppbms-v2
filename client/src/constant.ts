@@ -6,7 +6,9 @@ export const navBarLinks = [
   { linkTitle: "Encode Master List", linkName: "encodemasterlist", isVisible: true },
   { linkTitle: "Report", linkName: "report", isVisible: true },
   { linkTitle: "Settings", linkName: "settings", isVisible: true },
-  { linkTitle: "Receipt", linkName: "receipt", isVisible: false },
+  { linkTitle: "Master Lists Receipt", linkName: "masterlistsreceipt", isVisible: false },
+  { linkTitle: "Dispatch Control Proof", linkName: "dispatchcontrolproof", isVisible: false },
+  { linkTitle: "Dispatch Control Receipt", linkName: "dispatchcontrolreceipt", isVisible: false },
 ];
 export const recordFilterKeys = [
   "subsName",

@@ -11,7 +11,6 @@ import {
 } from "../interfaces";
 import isNil from "lodash/isNil";
 import isArray from "lodash/isArray";
-import isObject from "lodash/isObject";
 
 const initialState = {
   isLoading: false,

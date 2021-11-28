@@ -289,8 +289,8 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
         <td>{moment(date).format("MMM D, YYYY")}</td>
         <td>
           <span className="BasicLink">View Record</span> |{" "}
-          <span className="BasicLink">Print Receipt</span> |{" "}
-          <span className="BasicLink">Print Proof</span> |{" "}
+          <span className="BasicLink" onClick={() => window.open(`/dispatchcontrolreceipt?messengerid=${id}`, "_blank")}>Print Receipt</span> |{" "}
+          <span className="BasicLink" onClick={() => window.open(`/dispatchcontrolproof?messengerid=${id}`, "_blank")}>Print Proof</span> |{" "}
           <span className="BasicLink" onClick={() => editMessenger(id, messengerName, address, prepared, date)}>Edit</span> |{" "}
           <span className="BasicLink" onClick={() => deleteMessenger(id, messengerName)}>Delete</span>
         </td>

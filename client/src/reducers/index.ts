@@ -7,6 +7,7 @@ import modalTopAlertReducer from './modalTopAlertReducers';
 import secondModalTopAlertReducer from './secondModalTopAlertReducers';
 import areaPriceReducer from './areaPriceReducers';
 import dispatchControlMessengerReducer from './dispatchControlMessengerReducers';
+import dispatchControlDataReducer from './dispatchControlDataReducers';
 import barcodeMiddleTextReducer from './barcodeMiddleTextReducers';
 import encodeListReducer from './encodeListReducers';
 import encodeListCountReducer from './encodeListCountReducers';
@@ -22,6 +23,7 @@ export default combineReducers({
     secondModalTopAlert: secondModalTopAlertReducer,
     areaPrice: areaPriceReducer,
     dispatchControlMessenger: dispatchControlMessengerReducer,
+    dispatchControlData: dispatchControlDataReducer,
     barcodeMiddleText: barcodeMiddleTextReducer,
     encodeList: encodeListReducer,
     encodeListCount: encodeListCountReducer,

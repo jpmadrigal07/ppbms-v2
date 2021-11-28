@@ -40,8 +40,6 @@ const mongoDbFunction = async () => {
         }
     )
 
-    console.log('res', toInsert)
-
 };
 
 mongoDbFunction();
