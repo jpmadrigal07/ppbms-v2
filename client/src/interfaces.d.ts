@@ -47,6 +47,15 @@ export interface I_GlobalState {
         data: I_DispatchControlMessenger[],
         pageLoaded: number[]
     }
+    dispatchControlData: {
+        isLoading: boolean,
+        isUpdateLoading: boolean,
+        isAddLoading: boolean,
+        isDeleteLoading: boolean,
+        data: I_DispatchControlData[],
+        proofRecordCounts: number[],
+        pageLoaded: number[]
+    }
     encodeList: {
         isLoading: boolean,
         isUpdateLoading: boolean,
@@ -118,6 +127,19 @@ export interface I_DispatchControlMessenger {
     preparedBy: string,
     date: string,
     deletedAt: string,
+    [key: string]: any
+}
+
+export interface I_DispatchControlData {
+    _id: string,
+    messengerId: string,
+    dataCycleCode: String,
+    pickupDate: string,
+    sender: string,
+    delType: string,
+    deletedAt: string,
+    createdAt: string,
+    recordQty: number,
     [key: string]: any
 }
 
@@ -416,5 +438,28 @@ export interface I_ReceiptProps {
     gSetCurrentPage: Function,
     gAuthData: any
 }
+
+export interface I_DispatchControlReceiptProps {
+    dispatchControlMessengerData: I_DispatchControlMessenger[],
+    dispatchControlDataData: I_DispatchControlData[],
+    getDispatchControlMessengers: Function,
+    getDispatchControlDataRecordCount: Function,
+    getDispatchControlData: Function,
+    gSetCurrentPage: Function,
+    proofRecordCounts: number[],
+    gAuthData: any
+}
+
+export interface I_DispatchControlProofProps {
+    dispatchControlMessengerData: I_DispatchControlMessenger[],
+    dispatchControlDataData: I_DispatchControlData[],
+    getDispatchControlMessengers: Function,
+    getDispatchControlDataRecordCount: Function,
+    getDispatchControlData: Function,
+    gSetCurrentPage: Function,
+    proofRecordCounts: number[],
+    gAuthData: any
+}
+
 
 

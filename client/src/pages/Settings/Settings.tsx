@@ -49,7 +49,7 @@ const Settings = (props: I_SettingsProps) => {
       if (userData.dbRes.password === oldPassword) {
         try {
           await updateUser(userData.dbRes._id, newPassword);
-        } catch (err) {
+        } catch (err: any) {
           triggerTopAlert(true, err.message, "danger")
         }
       } else {

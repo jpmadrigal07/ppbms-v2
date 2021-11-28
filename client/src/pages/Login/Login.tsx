@@ -82,7 +82,7 @@ const Login = (props: I_LoginProps) => {
           username: username,
           password: password,
         });
-      } catch (err) {
+      } catch (err: any) {
         setShowAlert(true)
         setAlertHeading("Oh oh...")
         setAlertMessage(err.message)

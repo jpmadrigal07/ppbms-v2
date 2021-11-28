@@ -311,7 +311,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
           |{" "}
           <span
             className="BasicLink"
-            onClick={() => window.open(`/receipt?encodelistid=${id}`, "_blank")}
+            onClick={() => window.open(`/masterlistsreceipt?encodelistid=${id}`, "_blank")}
           >
             Print Receipt
           </span>{" "}

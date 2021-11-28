@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const DispatchControlData = require("../models/dispatchControlData");
+const Record = require("../models/record");
 const _ = require("lodash");
 
 // @route   GET api/dispatchControlData
@@ -8,13 +9,15 @@ const _ = require("lodash");
 // @access  Public
 router.get("/", async (req, res) => {
   const condition = !_.isNil(req.query.condition) ? JSON.parse(req.query.condition) : {};
+  const limit = !_.isNil(req.query.limit) ? JSON.parse(req.query.limit) : 0;
+  const skip = !_.isNil(req.query.skip) ? JSON.parse(req.query.skip) : 0;
   if (_.isNil(condition.deletedAt)) {
       condition.deletedAt = {
           $exists: false
       }
   }
   try {
-    const getAllDispatchControlData = await DispatchControlData.find(condition);
+    const getAllDispatchControlData = await DispatchControlData.find(condition).skip(skip).limit(limit);
     res.json({
       dbRes: getAllDispatchControlData,
       isSuccess: true
@@ -25,6 +28,39 @@ router.get("/", async (req, res) => {
       isSuccess: false
     });
   }
+});
+
+// @route   GET api/record/count
+// @desc    Get All Record
+// @access  Public
+router.get("/count/record", async (req, res) => {
+  const condition = !_.isNil(req.query.condition)
+    ? JSON.parse(req.query.condition)
+    : {};
+  const results = condition.map((query) => {
+    // query.deletedAt = {
+    //   $exists: false,
+    // };
+    return Record.aggregate([
+      { $addFields: { sender: { $trim: { input: "$sender" } } } },
+      { $match : JSON.parse(query) },
+      { $group: { _id: null, count: { $sum: 1 } } }
+    ]);
+  });
+  Promise.all(results).then((values) => {
+    res.json({
+      dbRes: values?.map((res) => {
+        const count = res[0]?.count;
+        return count ? count : 0;
+      }),
+      isSuccess: true,
+    });
+  }).catch(function(err) {
+    res.json({
+      dbRes: err,
+      isSuccess: false,
+    });
+  });
 });
 
 // @route   GET api/dispatchControlData/:id

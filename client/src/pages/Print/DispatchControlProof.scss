@@ -1,0 +1,21 @@
+.panel {
+    border-radius: 0px;
+    border: 1px solid #000000;
+}
+.panel > .panel-heading {
+    border-bottom: 1px solid #000000;
+    background-color: black !important;
+    -webkit-print-color-adjust: exact; 
+}
+.dispatch-control-proof > table.table-bordered{
+    border: 1px solid #000000 !important;
+    font-size: 12px;
+}
+.dispatch-control-proof > table.table-bordered > thead > tr > th{
+    border: 1px solid #000000 !important;
+    padding: 1px;
+}
+.dispatch-control-proof > table.table-bordered > tbody > tr > td{
+    border: 1px solid #000000 !important;
+    padding: 1px;
+}

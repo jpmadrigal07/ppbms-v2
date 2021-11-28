@@ -8,7 +8,9 @@ import DispatchControl from "./pages/DispatchControl/DispatchControl";
 import MasterList from "./pages/MasterList/MasterList";
 import Login from "./pages/Login/Login";
 import Settings from "./pages/Settings/Settings";
-import Receipt from "./pages/Receipt/Receipt";
+import MasterListReceipt from "./pages/Print/MasterListReceipt";
+import DispatchControlProof from "./pages/Print/DispatchControlProof";
+import DispatchControlReceipt from "./pages/Print/DispatchControlReceipt";
 import { pageTitle } from "./constant";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.scss";
@@ -78,9 +80,21 @@ const App = (props: I_AppProps) => {
             }}
           />
           <Route
-            path="/receipt"
+            path="/masterlistsreceipt"
             render={() => {
-              return <Receipt />;
+              return <MasterListReceipt />;
+            }}
+          />
+          <Route
+            path="/dispatchcontrolproof"
+            render={() => {
+              return <DispatchControlProof />;
+            }}
+          />
+          <Route
+            path="/dispatchcontrolreceipt"
+            render={() => {
+              return <DispatchControlReceipt />;
             }}
           />
         </>

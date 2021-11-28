@@ -3,15 +3,20 @@ Version: 0.0.0
 
 Planned Release:
 
-• Descending Pagination on Master List
+• Descending Pagination on Master Lists
 • Search Pagination on Master List
 • Dispatch Control Print Receipt
 • Dispatch Control Print Proof
+• Master Lists unassigned and total count separate loading
 
 Actual Release:
 
-• Sample 1
-• Sample 2
+• Descending Pagination on Master List
+• Dispatch Control Print Receipt
+   * Change folder and file name of Master Lists Receipt
+   * Change url path Master Lists Receipt
+   * Add the Print Receipt of Dispatch Control from v1 with
+     the same implementation of Master Lists Receipt from v2
 • Sample 3
 • Sample 4
 
