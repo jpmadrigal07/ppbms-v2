@@ -19,5 +19,5 @@ export const recordFilterKeys = [
 ];
 export const defaultPageWhenLoggedIn = "Dashboard";
 export const defaultPageWhenLoggedOut = "Login";
-export const encodeListPaginationDataCount = 5;
+export const encodeListPaginationDataCount = 10;
 export const recordPaginationDataCount = 5;

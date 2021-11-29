@@ -234,7 +234,6 @@ const MasterListView = (props: I_MasterListViewProps) => {
       const newPageNumber = undefined;
       getEncodeList(urlVariables, newPageNumber);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchPhrase]);
 
   const alterPagination = (
@@ -452,28 +451,13 @@ const MasterListView = (props: I_MasterListViewProps) => {
             <tbody>
               {encodeListSearchPagination[encodeListSearchCurrentPage].data.map(
                 (encodeList: I_EncodeList, index: number) => {
-                  const record = recordData.filter(
-                    (rec) => rec.encodeListId === encodeList._id
-                  );
-                  const assigned = record.filter(
-                    (rec) =>
-                      rec.encodeListId === encodeList._id &&
-                      !_.isNil(rec.messengerId) &&
-                      _.isNil(rec.deletedAt)
-                  );
-                  const unAssigned = record.filter(
-                    (rec) =>
-                      rec.encodeListId === encodeList._id &&
-                      _.isNil(rec.messengerId) &&
-                      _.isNil(rec.deletedAt)
-                  );
                   return renderEncodeLists(
                     encodeList._id,
                     encodeList.fileName,
                     encodeList.createdAt,
-                    assigned.length,
-                    unAssigned.length,
-                    record.length,
+                    encodeList.assignedRecordCount,
+                    encodeList.unAssignedRecordCount,
+                    encodeList.recordCount,
                     index
                   );
                 }
