@@ -19,6 +19,9 @@ router.get("/", async (req, res) => {
             $exists: false,
         };
     }
+    // If this query is taking longer than 2 seconds, it means that encodeListId
+    // in records collections is not yet indexed. Implement it using MongoDB Compass
+    // _MONGOSH 1. use ppbms 2. db.records.ensureIndex({"encodeListId": 1});
     try {
         const encodeListIds = await EncodeList.find(condition, {_id: 1})
             .skip(skip)
@@ -99,7 +102,7 @@ router.get("/", async (req, res) => {
             {
                 $addFields: {
                     recordCount: {
-                        $size: "$record"
+                       $size: "$record"
                     },
                     assignedRecordCount: {
                         $size: "$assignedRecord"
