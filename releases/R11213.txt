@@ -3,7 +3,7 @@ Version: 0.0.0
 
 Planned Release:
 
-• Descending Pagination on Master Lists
+• Search Descending on Master List
 • Search Pagination on Master List
 • Dispatch Control Print Receipt
 • Dispatch Control Print Proof
@@ -11,18 +11,15 @@ Planned Release:
 
 Actual Release:
 
-• Descending Pagination on Master List
+• Master Lists unassigned and total count separate loading
+  - Query is already coded properly but if the query is taking longer than 2 seconds,
+    it means that encodeListId in records collections is not yet indexed. Implement it
+    using MongoDB Compass _MONGOSH 1. use ppbms 2. db.records.ensureIndex({"encodeListId": 1});
 • Dispatch Control Print Receipt
-   * Change folder and file name of Master Lists Receipt
-   * Change url path Master Lists Receipt
-   * Add the Print Receipt of Dispatch Control from v1 with
-     the same implementation of Master Lists Receipt from v2
-• Sample 3
-• Sample 4
+• Dispatch Control Print Proof
+• Search Pagination on Master List
+• Search Descending on Master List
 
 Added Release:
 
-• Sample 1
-• Sample 2
-• Sample 3
-• Sample 4
+-
