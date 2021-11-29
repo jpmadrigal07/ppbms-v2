@@ -3,7 +3,7 @@ Version: 0.0.0
 
 Planned Release:
 
-• Search Descending on Master List
+• Search Record count
 • Search Pagination on Master List
 • Dispatch Control Print Receipt
 • Dispatch Control Print Proof
@@ -18,7 +18,7 @@ Actual Release:
 • Dispatch Control Print Receipt
 • Dispatch Control Print Proof
 • Search Pagination on Master List
-• Search Descending on Master List
+• Search Record count
 
 Added Release:
 

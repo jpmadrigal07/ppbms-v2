@@ -14,7 +14,7 @@ export const bigDataChunkArrayForPagination = (
   const currentPaginationCount = currentPaginationData.length;
   const lastPageNumberG = !_.isNil(lastPageNumber) ? lastPageNumber : 0;
   const toSkipM = currentPageNumberIndex > 1 ? currentPageNumberIndex : 1;
-  if (currentPaginationCount !== 0 || updatedData.length > 5 ) {
+  if (currentPaginationCount !== 0 || updatedData.length > encodeListPaginationDataCount ) {
     const toSkipData =
       currentPageNumber > lastPageNumberG
         ? currentPaginationCount * encodeListPaginationDataCount - 1
