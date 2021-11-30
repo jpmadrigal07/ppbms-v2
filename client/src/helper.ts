@@ -60,7 +60,7 @@ export const chunkArrayForSearchPagination = (
   let index = 0;
   while (index < array.length) {
     chunked_arr.push({
-      pageNumber: index,
+      pageNumber: chunked_arr.length,
       data: array.slice(index, size + index),
     });
     index += size;

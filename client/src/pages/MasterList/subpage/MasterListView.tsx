@@ -22,6 +22,7 @@ import DeleteEncodeListModal from "../modal/DeleteEncodeListModal";
 import _ from "lodash";
 import isNil from "lodash/isNil";
 import moment from "moment";
+import DatePicker from "react-datepicker";
 
 const MasterListView = (props: I_MasterListViewProps) => {
   const {
@@ -42,6 +43,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
   } = props;
 
   const [encodeListPaginationCount, setEncodeListPaginationCount] = useState(0);
+  const [encodeListSearchPaginationCount, setEncodeListSearchPaginationCount] = useState(0);
   const [encodeListPagination, setEncodeListPagination] = useState<any>([]);
   const [
     encodeListSearchPagination,
@@ -64,6 +66,7 @@ const MasterListView = (props: I_MasterListViewProps) => {
   ] = useState(false);
   const [listToShowRecord, setListToShowRecord] = useState("");
   const [searchPhrase, setSearchPhrase] = useState("");
+  const [date, setDate] = useState<Date | null>(null);
 
   useEffect(() => {
     if (!_.isNil(gAuthData) && gAuthData !== "" && !_.isNil(gAuthData.role)) {
@@ -177,6 +180,14 @@ const MasterListView = (props: I_MasterListViewProps) => {
   }, [importedListCount]);
 
   useEffect(() => {
+    if (encodeListSearchPagination.length > 0) {
+      setEncodeListSearchPaginationCount(
+        Math.ceil(encodeListSearchPagination.length)
+      );
+    }
+  }, [encodeListSearchPagination]);
+
+  useEffect(() => {
     if(encodeListData.length > 0 && importedListCount > 0 && encodeListPagination.length > 0 && isDeleteEncodeListModalOpen) {
       const chunkCounts = encodeListPagination.map((res: any) => {
         return Array.isArray(res.data) ? res!.data.length : 0;
@@ -212,12 +223,12 @@ const MasterListView = (props: I_MasterListViewProps) => {
   }, [encodeListData, encodeListPagination, importedListCount])
 
   useEffect(() => {
-    setEncodeListCurrentPage(0);
     if (
       encodeListData.length > 0 &&
       searchPhrase !== "" &&
       searchPhrase.length === 10
     ) {
+      setEncodeListCurrentPage(0);
       const loadedEncodeListsIds = encodeListData.map(
         (res: I_EncodeList) => res._id
       );
@@ -233,6 +244,9 @@ const MasterListView = (props: I_MasterListViewProps) => {
       )}`;
       const newPageNumber = undefined;
       getEncodeList(urlVariables, newPageNumber);
+    } else {
+      setEncodeListSearchCurrentPage(0);
+      setEncodeListSearchPagination([]);
     }
   }, [searchPhrase]);
 
@@ -266,6 +280,21 @@ const MasterListView = (props: I_MasterListViewProps) => {
     }
   };
 
+  const alterSearchPagination = (
+    isAddition: boolean,
+    isLastPage: boolean,
+    value: number
+  ) => {
+    if (!isLastPage) {
+      const add = encodeListSearchCurrentPage + value;
+      const subtract = encodeListSearchCurrentPage - value;
+      const alterPageNumberBy = isAddition ? add : subtract;
+      setEncodeListSearchCurrentPage(alterPageNumberBy);
+    } else {
+      setEncodeListSearchCurrentPage(value);
+    }
+  };
+
   const renderEncodeLists = (
     id: string,
     fileName: string,
@@ -275,8 +304,9 @@ const MasterListView = (props: I_MasterListViewProps) => {
     totalCount: number,
     index: number
   ) => {
-    const itemNumber =
-      encodeListCurrentPage * encodeListPaginationDataCount + (index + 1);
+    const itemNumber = searchPhrase === "" ?
+      encodeListCurrentPage * encodeListPaginationDataCount + (index + 1) : 
+        encodeListSearchCurrentPage * encodeListPaginationDataCount + (index + 1);
     const modalTitleUnAssigned = `Unassigned records of ${fileName}`;
     const modalTitleRecord = `Records of ${fileName}`;
     const showUnassignedRecord = "unassigned";
@@ -464,6 +494,32 @@ const MasterListView = (props: I_MasterListViewProps) => {
               )}
             </tbody>
           </Table>
+
+          <Pagination>
+            {encodeListSearchCurrentPage > 0 ? (
+              <>
+                <Pagination.First onClick={() => setEncodeListSearchCurrentPage(0)} />
+                <Pagination.Prev
+                  onClick={() => alterSearchPagination(false, false, 1)}
+                />
+              </>
+            ) : null}
+            <h3 style={{ marginLeft: "10px", marginRight: "10px" }}>
+              {encodeListSearchCurrentPage + 1} of {encodeListSearchPaginationCount}
+            </h3>
+            {encodeListSearchCurrentPage + 1 < encodeListSearchPaginationCount ? (
+              <>
+                <Pagination.Next
+                  onClick={() => alterSearchPagination(true, false, 1)}
+                />
+                <Pagination.Last
+                  onClick={() =>
+                    alterSearchPagination(true, true, encodeListSearchPaginationCount - 1)
+                  }
+                />
+              </>
+            ) : null}
+          </Pagination>
         </>
       );
     } else if (
@@ -471,25 +527,33 @@ const MasterListView = (props: I_MasterListViewProps) => {
         (encodeListPaginationCount === 0 || encodeListPaginationCount > 0)) ||
       (searchPhrase.length > 0 && searchPhrase.length < 10)
     ) {
-      return <Spinner animation="grow" />;
+      return <span style={{display: 'flex', justifyContent: 'center'}}><Spinner animation="grow"/></span>;
     } else if (
       !isEncodeListLoading ||
       encodeListPagination.length > 0 ||
       !isEncodeListLoading ||
       encodeListSearchPagination.length > 0
     ) {
-      return <h5 style={{ color: "gray" }}>No data found.</h5>;
+      return <h5 style={{ color: "gray", textAlign: 'center' }}>No data found.</h5>;
     }
   };
 
   return (
     <>
       <Form.Group controlId="searchEncodeList" style={{ marginTop: "25px" }}>
-        <Form.Control
+        <DatePicker
+          id="formBasicPassword"
           className="form-control"
-          placeholder="Search by Date Imported (MM/DD/YYYY)"
+          placeholderText="Search by Date Imported (MM/DD/YYYY)"
           autoComplete="off"
-          onChange={(e) => setSearchPhrase(e.target.value)}
+          selected={date}
+          onChange={(dateVal: Date) => {
+            if(dateVal) {
+              const dateSelected = moment(new Date(dateVal.toString())).format("MM/DD/YYYY");
+              setSearchPhrase(dateSelected);
+              setDate(dateVal);
+            }
+          }}
         />
       </Form.Group>
       {renderEncodeListTable()}
