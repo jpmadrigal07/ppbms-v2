@@ -12,6 +12,10 @@
     text-overflow: ellipsis;
 }
 
+.react-datepicker__triangle {
+    left: 200px !important;
+}
+
 @media print {
     .SampleClass {
         position: absolute;
