@@ -24,3 +24,4 @@ Actual Release:
 Added Release:
 
 • Fix dispatch control pagination
+• Delete old code of Delete all Masterlist
