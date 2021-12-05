@@ -9,7 +9,7 @@ import {
 } from "../../../interfaces";
 import moment from "moment";
 import { getDispatchControlMessengers, setDispatchControlMessengerLoadedPage } from "../../../actions/dispatchControlMessengerActions";
-import { encodeListPaginationDataCount } from "../../../constant";
+import { dispatchControlMessengerPaginationDataCount } from "../../../constant";
 import { getDashboardCount } from "../../../actions/dashboardCountActions";
 import DeleteMessengerModal from "../modal/DeleteMessengerModal";
 import EditMessengerModal from "../modal/EditMessengerModal";
@@ -86,6 +86,7 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
             pageLoaded.slice(-1).pop(),
             messengerListCurrentPage,
             pageLoaded.findIndex((res: number) => res === messengerListCurrentPage),
+            dispatchControlMessengerPaginationDataCount,
           );
           setMessengerListPagination(pagination);
         } else if (
@@ -96,7 +97,7 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
         ) {
           const figure = chunkArrayForSearchPaginationDispatch(
             dispatchControlMessengerData,
-            encodeListPaginationDataCount,
+            dispatchControlMessengerPaginationDataCount,
             searchPhrase.toLowerCase()
           );
           setMessengerListSearchPagination(
@@ -106,7 +107,7 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
         if(isDeleteMessengerModalOpen) {
           const figure = chunkArray(
             dispatchControlMessengerData,
-            encodeListPaginationDataCount,
+            dispatchControlMessengerPaginationDataCount,
             pageLoaded
           );
           setMessengerListPagination(
@@ -126,7 +127,7 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
       if(searchPhrase === "") {
         const figure = chunkArray(
           dispatchControlMessengerData,
-          encodeListPaginationDataCount,
+          dispatchControlMessengerPaginationDataCount,
           pageLoaded
         )
         setMessengerListPagination(
@@ -135,7 +136,7 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
       } else {
         const figure = chunkArrayForSearchPaginationDispatch(
           dispatchControlMessengerData,
-          encodeListPaginationDataCount,
+          dispatchControlMessengerPaginationDataCount,
           searchPhrase.toLowerCase()
         );
         setMessengerListSearchPagination(
@@ -190,7 +191,7 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
         const result = name.includes(searchPhrase) || address.includes(searchPhrase) || preparedBy.includes(searchPhrase);
         return result ? messengerData : null; 
       }).filter((res: any) => res);
-      const searchPaginationNewCount = Math.ceil(searchPaginationData.length/encodeListPaginationDataCount)
+      const searchPaginationNewCount = Math.ceil(searchPaginationData.length/dispatchControlMessengerPaginationDataCount)
       if(messengerListSearchPagination.length > searchPaginationNewCount) {
         const removedPages = messengerListSearchPagination.length - searchPaginationNewCount
         setMessengerListSearchCurrentPage(messengerListSearchCurrentPage - removedPages)
@@ -212,16 +213,16 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
       const actualPageNumber = alterPageNumberBy;
       const isPageLoaded = pageLoaded.includes(actualPageNumber);
       if (!isPageLoaded) {
-        const toSkip = dispatchControlCount - ((actualPageNumber+1) * encodeListPaginationDataCount);
-        const urlVariables = `?limit=${encodeListPaginationDataCount}&skip=${toSkip < 0 ? 0 : toSkip}`;
+        const toSkip = dispatchControlCount - ((actualPageNumber+1) * dispatchControlMessengerPaginationDataCount);
+        const urlVariables = `?limit=${dispatchControlMessengerPaginationDataCount}&skip=${toSkip < 0 ? 0 : toSkip}`;
         getDispatchControlMessengers(urlVariables, actualPageNumber);
       }
     } else {
       setMessengerListCurrentPage(value);
       const isPageLoaded = pageLoaded.includes(value);
       if (!isPageLoaded) {
-        const remainder = dispatchControlCount % encodeListPaginationDataCount;
-        const limit = remainder === 0 ? encodeListPaginationDataCount : remainder;
+        const remainder = dispatchControlCount % dispatchControlMessengerPaginationDataCount;
+        const limit = remainder === 0 ? dispatchControlMessengerPaginationDataCount : remainder;
         const urlVariables = `?limit=${limit}&skip=0`;
         getDispatchControlMessengers(urlVariables, value);
       }
@@ -254,8 +255,8 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
       dispatchControlCount > 0 &&
       currentTab === "lists"
     ) {
-      const toSkip = dispatchControlCount-encodeListPaginationDataCount;
-      const urlVariables = `?limit=${encodeListPaginationDataCount}&skip=${toSkip}`;
+      const toSkip = dispatchControlCount-dispatchControlMessengerPaginationDataCount;
+      const urlVariables = `?limit=${dispatchControlMessengerPaginationDataCount}&skip=${toSkip}`;
       const newPageNumber = 0;
       getDispatchControlMessengers(urlVariables, newPageNumber);
     }
@@ -265,7 +266,7 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
   useEffect(() => {
     if (dispatchControlCount > 0) {
       setMessengerListPaginationCount(
-        Math.ceil(dispatchControlCount / encodeListPaginationDataCount)
+        Math.ceil(dispatchControlCount / dispatchControlMessengerPaginationDataCount)
       );
     }
   }, [dispatchControlCount]);
@@ -278,8 +279,9 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
     date: string,
     index: number
   ) => {
-    const itemNumber =
-      messengerListCurrentPage * encodeListPaginationDataCount + (index + 1);
+    const itemNumber = searchPhrase === "" ?
+      messengerListCurrentPage * dispatchControlMessengerPaginationDataCount + (index + 1) : 
+        messengerListSearchCurrentPage * dispatchControlMessengerPaginationDataCount + (index + 1);
     return (
       <tr key={index}>
         <td>{itemNumber}</td>
