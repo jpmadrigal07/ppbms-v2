@@ -78,25 +78,6 @@ const MasterListView = (props: I_MasterListViewProps) => {
   }, [gAuthData]);
 
   useEffect(() => {
-    // const recordEncodeListIds = _.uniq(
-    //   recordData.map((res) => {
-    //     return res.encodeListId;
-    //   })
-    // );
-    // const encodeListIds = encodeListData.map((res) => {
-    //   return res._id;
-    // });
-    // if (recordEncodeListIds.length > encodeListIds.length && !isRecordLoading) {
-    //   const deletedEncodeList = recordEncodeListIds.filter(function (val) {
-    //     return encodeListIds.indexOf(val) === -1;
-    //   });
-    //   // KAILANGAN IMBESTIGAHAN TO KASI NAWAWALA YUNG DATA
-    //   bulkDeleteRecord(deletedEncodeList);
-    // }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [encodeListData, isRecordLoading]);
-
-  useEffect(() => {
     if(currentTab === "view") {
       if(pageLoaded.length > 0) {
         const pageLoadedLoading = pageLoaded.includes(encodeListCurrentPage);
