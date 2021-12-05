@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const EncodeList = require("../models/encodeList");
+const Record = require("../models/record");
 const _ = require("lodash");
 const moment = require("moment");
 
@@ -18,6 +19,9 @@ router.get("/", async (req, res) => {
             $exists: false,
         };
     }
+    // If this query is taking longer than 2 seconds, it means that encodeListId
+    // in records collections is not yet indexed. Implement it using MongoDB Compass
+    // _MONGOSH 1. use ppbms 2. db.records.ensureIndex({"encodeListId": 1});
     try {
         const encodeListIds = await EncodeList.find(condition, {_id: 1})
             .skip(skip)
@@ -98,7 +102,7 @@ router.get("/", async (req, res) => {
             {
                 $addFields: {
                     recordCount: {
-                        $size: "$record"
+                       $size: "$record"
                     },
                     assignedRecordCount: {
                         $size: "$assignedRecord"
@@ -329,13 +333,19 @@ router.delete("/:id", async (req, res) => {
                     },
                 }
             );
+            const deleteRecord = await Record.updateMany({encodeListId: req.params.id}, {
+                    $set: {
+                        deletedAt: Date.now(),
+                    },
+                }
+            );
             res.json({
-                dbRes: deleteEncodeList,
+                dbRes: { deleteEncodeList, deleteRecord },
                 isSuccess: true,
             });
         } else {
             res.json({
-                dbRes: "Encode list is already deleted.",
+                dbRes: "Encode list is already deleted",
                 isSuccess: false,
             });
         }

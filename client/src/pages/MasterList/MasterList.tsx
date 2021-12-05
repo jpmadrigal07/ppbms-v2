@@ -16,7 +16,7 @@ const MasterList = () => {
           onSelect={(k: any) => setKey(k)}
         >
           <Tab eventKey="view" title="View">
-            <MasterListView/>
+            <MasterListView currentTab={key}/>
           </Tab>
           <Tab eventKey="import" title="Import">
             <Import useBy={"masterlists"} />

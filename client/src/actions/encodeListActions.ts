@@ -8,8 +8,9 @@ import {
   ADD_DASHBOARD_COUNT,
   PAGE_LOADED_ENCODE_LIST,
   TOP_ALERT,
-  GET_ENCODE_LIST_COUNT,
-  GET_ENCODE_LIST_RECORD_COUNT
+  OVERWRITE_PAGE_LOADED_ENCODE_LIST,
+  DELETE_DASHBOARD_COUNT,
+  DELETE_RECORD
 } from "./types";
 import _ from "lodash";
 
@@ -39,6 +40,8 @@ export const getEncodeList = (variables: string | undefined, pageNumber: number 
             payload: pageNumber
           });
         }
+      } else {
+        dispatch(setEncodeListLoader("list", false));
       }
     })
     .catch((err) => {
@@ -105,7 +108,15 @@ export const deleteEncodeList = (id: string) => (dispatch: Function) => {
       if (res.data.isSuccess) {
         dispatch({
           type: DELETE_ENCODE_LIST,
-          payload: res.data.dbRes,
+          payload: res.data.dbRes.deleteEncodeList,
+        });
+        dispatch({
+          type: DELETE_RECORD,
+          payload: { type: "bulk", encodeListId: res.data.dbRes.deleteEncodeList._id },
+        });
+        dispatch({
+          type: DELETE_DASHBOARD_COUNT,
+          payload: {type: "listData", count: res.data.dbRes.deleteRecord.nModified},
         });
         dispatch({
           type: MODAL_TOP_ALERT,
@@ -138,3 +149,11 @@ export const setEncodeListLoader = (type: string, isLoading: boolean) => {
     payload: { type, isLoading },
   };
 };
+
+export const setEncodeListLoadedPage = (array: number[]) => {
+  return {
+    type: OVERWRITE_PAGE_LOADED_ENCODE_LIST,
+    payload: array
+  };
+};
+

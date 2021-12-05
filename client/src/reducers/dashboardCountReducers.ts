@@ -44,19 +44,19 @@ export default function (state = initialState, action: I_ReduxAction) {
     case DELETE_DASHBOARD_COUNT:
       return {
         importedList:
-          payload.type === "importedList"
+          payload.type === "importedList" && state.importedList > 0
             ? state.importedList - payload.count
             : state.importedList,
         listData:
-          payload.type === "listData"
+          payload.type === "listData" && state.listData > 0
             ? state.listData - payload.count
             : state.listData,
         dispatchControl:
-          payload.type === "dispatchControl"
+          payload.type === "dispatchControl" && state.dispatchControl > 0
             ? state.dispatchControl - payload.count
             : state.dispatchControl,
         listCompleted:
-          payload.type === "listCompleted"
+          payload.type === "listCompleted" && state.listCompleted > 0
             ? state.listCompleted - payload.count
             : state.listCompleted,
       };

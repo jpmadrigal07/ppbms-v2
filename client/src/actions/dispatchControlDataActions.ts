@@ -1,25 +1,26 @@
 import axios from "axios";
 import {
-  GET_DISPATCH_CONTROL_MESSENGERS,
-  DISPATCH_CONTROL_MESSENGER_LOADER,
-  ADD_DISPATCH_CONTROL_MESSENGER,
+  GET_DISPATCH_CONTROL_DATA,
+  DISPATCH_CONTROL_DATA_LOADER,
+  ADD_DISPATCH_CONTROL_DATA,
   TOP_ALERT,
-  PAGE_LOADED_MESSENGERS,
-  OVERWRITE_PAGE_LOADED_MESSENGERS,
-  DELETE_DISPATCH_CONTROL_MESSENGER,
+  PAGE_LOADED_DATA,
+  OVERWRITE_PAGE_LOADED_DATA,
+  DELETE_DISPATCH_CONTROL_DATA,
   MODAL_TOP_ALERT,
-  UPDATE_DISPATCH_CONTROL_MESSENGER,
-  SECOND_MODAL_TOP_ALERT
+  UPDATE_DISPATCH_CONTROL_DATA,
+  SECOND_MODAL_TOP_ALERT,
+  PROOF_RECORD_COUNTS,
 } from "./types";
 import _ from "lodash";
 
-export const getDispatchControlMessengers = (variables: string | undefined, pageNumber: number | undefined) => (dispatch: Function) => {
-  dispatch(setDispatchControlMessengerLoader("list", true));
+export const getDispatchControlData = (variables: string | undefined, pageNumber: number | undefined) => (dispatch: Function) => {
+  dispatch(setDispatchControlDataLoader("list", true));
   axios
-    .get(`/api/dispatchControlMessenger${variables}`)
+    .get(`/api/dispatchControlData${variables}`)
     .then((res) => {
       dispatch({
-        type: GET_DISPATCH_CONTROL_MESSENGERS,
+        type: GET_DISPATCH_CONTROL_DATA,
         payload: res.data !== "" ? res.data : {},
       });
       if(!_.isNil(pageNumber)) {
@@ -27,16 +28,16 @@ export const getDispatchControlMessengers = (variables: string | undefined, page
         const isDbResArray = _.isArray(dbRes);
         if(isDbResArray && dbRes.length > 0) {
           dispatch({
-            type: PAGE_LOADED_MESSENGERS,
+            type: PAGE_LOADED_DATA,
             payload: pageNumber
           });
         }
       } else {
-        dispatch(setDispatchControlMessengerLoader("list", false));
+        dispatch(setDispatchControlDataLoader("list", false));
       }
     })
     .catch((err) => {
-      dispatch(setDispatchControlMessengerLoader("list", false));
+      dispatch(setDispatchControlDataLoader("list", false));
       dispatch({
         type: TOP_ALERT,
         payload: { showAlert: true, message: err.message, type: "danger" },
@@ -44,19 +45,38 @@ export const getDispatchControlMessengers = (variables: string | undefined, page
     });
 };
 
-export const addDispatchControlMessenger = (
+// bulk
+export const getDispatchControlDataRecordCount = (variables: string | undefined) => (dispatch: Function) => {
+  dispatch(setDispatchControlDataLoader("list", true));
+  axios
+    .get(`/api/dispatchControlData/count/record${variables}`)
+    .then((res) => {
+      dispatch({
+        type: PROOF_RECORD_COUNTS,
+        payload: res.data !== "" ? res.data : {},
+      });
+    })
+    .catch((err) => {
+      dispatch({
+        type: TOP_ALERT,
+        payload: { showAlert: true, message: err.message, type: "danger" },
+      });
+    });
+};
+
+export const addDispatchControlData = (
   name: string,
   address: string,
   preparedBy: string,
   date: string
 ) => (dispatch: Function) => {
-  dispatch(setDispatchControlMessengerLoader("add", true));
+  dispatch(setDispatchControlDataLoader("add", true));
   axios
-    .post(`/api/dispatchControlMessenger`, { name, address, preparedBy, date })
+    .post(`/api/dispatchControlData`, { name, address, preparedBy, date })
     .then((res) => {
       if (res.data.isSuccess) {
         dispatch({
-          type: ADD_DISPATCH_CONTROL_MESSENGER,
+          type: ADD_DISPATCH_CONTROL_DATA,
           payload: res.data !== "" ? res.data : {},
         });
         dispatch({
@@ -68,7 +88,7 @@ export const addDispatchControlMessenger = (
           },
         });
       } else {
-        dispatch(setDispatchControlMessengerLoader("add", false));
+        dispatch(setDispatchControlDataLoader("add", false));
         dispatch({
           type: TOP_ALERT,
           payload: { showAlert: true, message: res.data.dbRes, type: "danger" },
@@ -76,7 +96,7 @@ export const addDispatchControlMessenger = (
       }
     })
     .catch((err) => {
-      dispatch(setDispatchControlMessengerLoader("add", false));
+      dispatch(setDispatchControlDataLoader("add", false));
       dispatch({
         type: TOP_ALERT,
         payload: { showAlert: true, message: err.message, type: "danger" },
@@ -84,20 +104,20 @@ export const addDispatchControlMessenger = (
     });
 };
 
-export const updateDispatchControlMessenger = (
+export const updateDispatchControlData = (
   id: String,
   name: string,
   address: string,
   preparedBy: string,
   date: string
 ) => (dispatch: Function) => {
-  dispatch(setDispatchControlMessengerLoader("update", true));
+  dispatch(setDispatchControlDataLoader("update", true));
   axios
-    .patch(`/api/dispatchControlMessenger/${id}`, { name, address, preparedBy, date })
+    .patch(`/api/dispatchControlData/${id}`, { name, address, preparedBy, date })
     .then((res) => {
       if (res.data.isSuccess) {
         dispatch({
-          type: UPDATE_DISPATCH_CONTROL_MESSENGER,
+          type: UPDATE_DISPATCH_CONTROL_DATA,
           payload: res.data.dbRes,
         });
         dispatch({
@@ -109,7 +129,7 @@ export const updateDispatchControlMessenger = (
           },
         });
       } else {
-        dispatch(setDispatchControlMessengerLoader("update", false));
+        dispatch(setDispatchControlDataLoader("update", false));
         dispatch({
           type: MODAL_TOP_ALERT,
           payload: { showAlert: true, message: res.data.dbRes, type: "danger" },
@@ -117,7 +137,7 @@ export const updateDispatchControlMessenger = (
       }
     })
     .catch((err) => {
-      dispatch(setDispatchControlMessengerLoader("update", false));
+      dispatch(setDispatchControlDataLoader("update", false));
       dispatch({
         type: MODAL_TOP_ALERT,
         payload: { showAlert: true, message: err.message, type: "danger" },
@@ -125,14 +145,14 @@ export const updateDispatchControlMessenger = (
     });
 };
 
-export const deleteDispatchControlMessenger = (id: string) => (dispatch: Function) => {
-  dispatch(setDispatchControlMessengerLoader("delete", true));
+export const deleteDispatchControlData = (id: string) => (dispatch: Function) => {
+  dispatch(setDispatchControlDataLoader("delete", true));
   axios
-    .delete(`/api/dispatchControlMessenger/${id}`)
+    .delete(`/api/dispatchControlData/${id}`)
     .then((res) => {
       if (res.data.isSuccess) {
         dispatch({
-          type: DELETE_DISPATCH_CONTROL_MESSENGER,
+          type: DELETE_DISPATCH_CONTROL_DATA,
           payload: res.data.dbRes,
         });
         dispatch({
@@ -144,7 +164,7 @@ export const deleteDispatchControlMessenger = (id: string) => (dispatch: Functio
           },
         });
       } else {
-        dispatch(setDispatchControlMessengerLoader("delete", false));
+        dispatch(setDispatchControlDataLoader("delete", false));
         dispatch({
           type: SECOND_MODAL_TOP_ALERT,
           payload: { showAlert: true, message: res.data.dbRes, type: "danger" },
@@ -152,7 +172,7 @@ export const deleteDispatchControlMessenger = (id: string) => (dispatch: Functio
       }
     })
     .catch((err) => {
-      dispatch(setDispatchControlMessengerLoader("delete", false));
+      dispatch(setDispatchControlDataLoader("delete", false));
       dispatch({
         type: SECOND_MODAL_TOP_ALERT,
         payload: { showAlert: true, message: err.message, type: "danger" },
@@ -160,16 +180,16 @@ export const deleteDispatchControlMessenger = (id: string) => (dispatch: Functio
     });
 };
 
-export const setDispatchControlMessengerLoader = (type: string, isLoading: boolean) => {
+export const setDispatchControlDataLoader = (type: string, isLoading: boolean) => {
   return {
-    type: DISPATCH_CONTROL_MESSENGER_LOADER,
+    type: DISPATCH_CONTROL_DATA_LOADER,
     payload: { type, isLoading }
   };
 };
 
-export const setDispatchControlMessengerLoadedPage = (array: number[]) => {
+export const setDispatchControlDataLoadedPage = (array: number[]) => {
   return {
-    type: OVERWRITE_PAGE_LOADED_MESSENGERS,
+    type: OVERWRITE_PAGE_LOADED_DATA,
     payload: array
   };
 };

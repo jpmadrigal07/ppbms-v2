@@ -15,10 +15,10 @@ const DispatchControl = () => {
           onSelect={(k: any) => setKey(k)}
         >
           <Tab eventKey="lists" title="Lists">
-            <MessengerListView />
+            <MessengerListView currentTab={key} />
           </Tab>
           <Tab eventKey="addMessenger" title="Add Messenger">
-            <AddMessenger/>
+            <AddMessenger />
           </Tab>
         </Tabs>
       </Container>

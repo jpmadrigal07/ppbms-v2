@@ -1,25 +1,23 @@
-
-import { encodeListPaginationDataCount } from "./constant";
 import _ from "lodash";
 import { I_DispatchControlMessenger, I_EncodeList } from "./interfaces";
 import moment from "moment";
-import { isNumber } from "util";
 
 export const bigDataChunkArrayForPagination = (
   updatedData: any,
   currentPaginationData: any,
   lastPageNumber: number | undefined,
   currentPageNumber: number,
-  currentPageNumberIndex: number
+  currentPageNumberIndex: number,
+  paginationDataCount: number,
 ) => {
   const currentPaginationCount = currentPaginationData.length;
   const lastPageNumberG = !_.isNil(lastPageNumber) ? lastPageNumber : 0;
   const toSkipM = currentPageNumberIndex > 1 ? currentPageNumberIndex : 1;
-  if (currentPaginationCount !== 0 || updatedData.length > 5 ) {
+  if (currentPaginationCount !== 0 || updatedData.length > paginationDataCount ) {
     const toSkipData =
       currentPageNumber > lastPageNumberG
-        ? currentPaginationCount * encodeListPaginationDataCount - 1
-        : toSkipM * encodeListPaginationDataCount - 1;
+        ? currentPaginationCount * paginationDataCount - 1
+        : toSkipM * paginationDataCount - 1;
     const newData = [...currentPaginationData];
     newData.push({
       pageNumber: currentPageNumber,
@@ -27,7 +25,7 @@ export const bigDataChunkArrayForPagination = (
         .map((encodeList: any, i: number) => {
           if (i > toSkipData) {
             const limit = i - toSkipData;
-            if (limit <= encodeListPaginationDataCount) {
+            if (limit <= paginationDataCount) {
               return encodeList;
             }
           }
@@ -61,7 +59,7 @@ export const chunkArrayForSearchPagination = (
   let index = 0;
   while (index < array.length) {
     chunked_arr.push({
-      pageNumber: index,
+      pageNumber: chunked_arr.length,
       data: array.slice(index, size + index),
     });
     index += size;
@@ -84,23 +82,26 @@ export const chunkArrayForSearchPaginationDispatch = (
     })
     .filter((messengerListData: I_DispatchControlMessenger) => !_.isNil(messengerListData));
 
-  return chunk(array, size);
+  return chunk(array, size, null);
 };
 
 export const chunkArray = (
   data: any,
   size: number,
+  pageLoaded: number[]
 ) => {
-  return chunk(data, size);
+  return chunk(data, size, pageLoaded);
 };
 
-const chunk = (arr: any, len: any) => {
+const chunk = (arr: any, len: any, pageLoaded: number[] | null) => {
   let chunks = [],
       i = 0,
       n = arr.length,
       index = 0;
+
   while (i < n) {
-    chunks.push({pageNumber: index, data: arr.slice(i, i += len)});
+    const pageNumber = pageLoaded ? pageLoaded[index] : index
+    chunks.push({pageNumber, data: arr.slice(i, i += len)});
     index++;
   }
   return chunks;

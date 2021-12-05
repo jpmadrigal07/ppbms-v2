@@ -6,11 +6,11 @@ import { gSetCurrentPage } from "../../actions/navBarActions";
 import { getRecord } from "../../actions/recordActions";
 import { defaultPageWhenLoggedIn } from "../../constant";
 import { Spinner } from "react-bootstrap";
-import "./Receipt.scss";
+import "./MasterListReceipt.scss";
 import _ from "lodash";
 import JsBarcode from "jsbarcode";
 
-const Receipt = (props: I_ReceiptProps) => {
+const MasterListReceipt = (props: I_ReceiptProps) => {
   const { recordData, getRecord, gSetCurrentPage, gAuthData } = props;
 
   const history = useHistory();
@@ -22,7 +22,7 @@ const Receipt = (props: I_ReceiptProps) => {
       const href = window.location.href;
       const origin = window.location.origin;
       const getURLEncodeListId = href.replace(
-        `${origin}/receipt?encodelistid=`,
+        `${origin}/masterlistsreceipt?encodelistid=`,
         ""
       );
       if (getURLEncodeListId === href || getURLEncodeListId === "") {
@@ -67,7 +67,7 @@ const Receipt = (props: I_ReceiptProps) => {
         const rendering = p.map((res: I_Record, renderIndex: number) => {
           const counter = pIndex * 4 + (renderIndex + 1);
           return (
-            <div className="col-xs-6 col-sm-6 col-md-6 col-lg-6 table-border">
+            <div className="col-xs-6 col-sm-6 col-md-6 col-lg-6 table-border-ml">
               <div className="row">
                 <table className="table-data">
                   <tbody>
@@ -251,4 +251,4 @@ const mapStateToProps = (gState: I_GlobalState) => ({
 export default connect(mapStateToProps, {
   getRecord,
   gSetCurrentPage,
-})(Receipt);
+})(MasterListReceipt);

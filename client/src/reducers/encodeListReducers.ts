@@ -5,10 +5,14 @@ import {
   DELETE_ENCODE_LIST,
   ENCODE_LIST_LOADER,
   PAGE_LOADED_ENCODE_LIST,
-  GET_ENCODE_LIST_RECORD_COUNT
+  GET_ENCODE_LIST_RECORD_COUNT,
+  UPDATE_LATEST_ENCODE_LIST_COUNT
 } from "../actions/types";
 import { I_ReduxAction, I_EncodeList } from "../interfaces";
-import _ from "lodash";
+import sortBy from "lodash/sortBy";
+import uniqBy from "lodash/uniqBy";
+import orderBy from "lodash/orderBy";
+import isNil from "lodash/isNil";
 
 const initialState = {
   isLoading: false,
@@ -32,8 +36,23 @@ export default function (state = initialState, action: I_ReduxAction) {
     case ADD_ENCODE_LIST:
       return {
         ...state,
-        data: [...state.data, payload],
-        isAddLoading: false,
+        data: orderBy(uniqBy([...state.data, payload], '_id'), ['createdAt'], ['desc']),
+        isAddLoading: false
+      };
+    case UPDATE_LATEST_ENCODE_LIST_COUNT:
+      const newData = state.data.map((res: I_EncodeList, index: number) => {
+        let updatedItem = null;
+        if(index === 0) {
+          updatedItem = res;
+          updatedItem.assignedRecordCount = 0;
+          updatedItem.unAssignedRecordCount = payload;
+          updatedItem.recordCount = payload;
+        }
+        return updatedItem ? updatedItem : res;
+      }).filter((res: any) => !isNil(res))
+      return {
+        ...state,
+        data: newData
       };
     case ENCODE_LIST_LOADER:
       return {
@@ -52,13 +71,13 @@ export default function (state = initialState, action: I_ReduxAction) {
     case GET_ENCODE_LIST:
       return {
         ...state,
-        data: _.sortBy(_.uniqBy([...state.data, ...payload.dbRes], '_id'), ['createdAt']),
+        data: orderBy(uniqBy([...state.data, ...payload.dbRes], '_id'), ['createdAt'], ['desc']),
         isLoading: false
       };
     case PAGE_LOADED_ENCODE_LIST:
       return {
         ...state,
-        pageLoaded: _.sortBy([...state.pageLoaded, payload]),
+        pageLoaded: sortBy([...state.pageLoaded, payload]),
         isLoading: false
       };
     case GET_ENCODE_LIST_RECORD_COUNT:
@@ -88,9 +107,3 @@ export default function (state = initialState, action: I_ReduxAction) {
       return state;
   }
 }
-
-// GANTO ANG MAGING PAGINATION ARRAY STRUCTURE, ALISIN NA PAGINATION_ENCODE_LIST, FOR SEARCH NAMAN DAPAT SA MAIN ENCODELIST ARRAY SIYA MAG HANAP TAPOS STRUCTURE NALANG NG BAGONG PAGINATION
-// [{
-//     pageNumber: 1
-//     encodeListData: []
-// }]

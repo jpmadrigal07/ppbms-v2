@@ -1,0 +1,27 @@
+Name: R11213 (R = Relase | 1121 = Month and Year | 3 = Week)
+Version: 0.0.0
+
+Planned Release:
+
+• Search Record count
+• Search Pagination on Master List
+• Dispatch Control Print Receipt
+• Dispatch Control Print Proof
+• Master Lists unassigned and total count separate loading
+
+Actual Release:
+
+• Master Lists unassigned and total count separate loading
+  - Query is already coded properly but if the query is taking longer than 2 seconds,
+    it means that encodeListId in records collections is not yet indexed. Implement it
+    using MongoDB Compass _MONGOSH 1. use ppbms 2. db.records.ensureIndex({"encodeListId": 1});
+• Dispatch Control Print Receipt
+• Dispatch Control Print Proof
+• Search Pagination on Master List
+  - Including the converting of masterlist search input to date picker
+• Search Record count
+
+Added Release:
+
+• Fix dispatch control pagination
+• Delete old code of Delete all Masterlist

@@ -9,9 +9,10 @@ import {
 } from "../../../interfaces";
 import moment from "moment";
 import { getDispatchControlMessengers, setDispatchControlMessengerLoadedPage } from "../../../actions/dispatchControlMessengerActions";
-import { encodeListPaginationDataCount } from "../../../constant";
+import { dispatchControlMessengerPaginationDataCount } from "../../../constant";
 import { getDashboardCount } from "../../../actions/dashboardCountActions";
 import DeleteMessengerModal from "../modal/DeleteMessengerModal";
+import EditMessengerModal from "../modal/EditMessengerModal";
 import {
   bigDataChunkArrayForPagination,
   chunkArrayForSearchPaginationDispatch,
@@ -30,7 +31,8 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
     getDashboardCount,
     dispatchControlCount,
     pageLoaded,
-    setDispatchControlMessengerLoadedPage
+    setDispatchControlMessengerLoadedPage,
+    currentTab
   } = props;
 
   const [
@@ -52,7 +54,11 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
   const [searchPhrase, setSearchPhrase] = useState("");
   const [selectedMessengerId, setSelectedMessengerId] = useState("");
   const [selectedMessengerName, setSelectedMessengerName] = useState("");
+  const [selectedMessengerPrepared, setSelectedMessengerPrepared] = useState("");
+  const [selectedMessengerAddress, setSelectedMessengerAddress] = useState("");
+  const [selectedMessengerDate, setSelectedMessengerDate] = useState("");
   const [isDeleteMessengerModalOpen, setIsDeleteMessengerModalOpen] = useState(false);
+  const [isEditMessengerModalOpen, setIsEditMessengerModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isNil(gAuthData) && gAuthData !== "" && !isNil(gAuthData.role)) {
@@ -63,52 +69,83 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
   }, [gAuthData]);
 
   useEffect(() => {
-    if(pageLoaded.length > 0) {
-      const pageLoadedLoading = pageLoaded.includes(messengerListCurrentPage);
-      if (
-        currentPage === "Dispatch Control" &&
-        dispatchControlMessengerData.length > 0 &&
-        searchPhrase === "" &&
-        !isDispatchControlMessengerLoading &&
-        pageLoadedLoading &&
-        !isDeleteMessengerModalOpen
-      ) {
-        const pagination = bigDataChunkArrayForPagination(
+    if(currentTab === "lists" && !isEditMessengerModalOpen) {
+      if(pageLoaded.length > 0) {
+        const pageLoadedLoading = pageLoaded.includes(messengerListCurrentPage);
+        if (
+          currentPage === "Dispatch Control" &&
+          dispatchControlMessengerData.length > 0 &&
+          searchPhrase === "" &&
+          !isDispatchControlMessengerLoading &&
+          pageLoadedLoading &&
+          !isDeleteMessengerModalOpen
+        ) {
+          const pagination = bigDataChunkArrayForPagination(
+            dispatchControlMessengerData,
+            messengerListPagination,
+            pageLoaded.slice(-1).pop(),
+            messengerListCurrentPage,
+            pageLoaded.findIndex((res: number) => res === messengerListCurrentPage),
+            dispatchControlMessengerPaginationDataCount,
+          );
+          setMessengerListPagination(pagination);
+        } else if (
+          currentPage === "Dispatch Control" &&
+          dispatchControlMessengerData.length > 0 &&
+          searchPhrase !== "" &&
+          !isDispatchControlMessengerLoading
+        ) {
+          const figure = chunkArrayForSearchPaginationDispatch(
+            dispatchControlMessengerData,
+            dispatchControlMessengerPaginationDataCount,
+            searchPhrase.toLowerCase()
+          );
+          setMessengerListSearchPagination(
+            figure
+          );
+        }
+        if(isDeleteMessengerModalOpen) {
+          const figure = chunkArray(
+            dispatchControlMessengerData,
+            dispatchControlMessengerPaginationDataCount,
+            pageLoaded
+          );
+          setMessengerListPagination(
+            figure
+          );
+        }
+      }
+    } else {
+      if(currentTab === "addMessenger") {
+        if(messengerListCurrentPage !== 0) {
+          setMessengerListCurrentPage(0)
+        }
+        if(pageLoaded.length > 1) {
+          setDispatchControlMessengerLoadedPage([0])
+        }
+      }
+      if(searchPhrase === "") {
+        const figure = chunkArray(
           dispatchControlMessengerData,
-          messengerListPagination,
-          pageLoaded.slice(-1).pop(),
-          messengerListCurrentPage,
-          pageLoaded.findIndex((res: number) => res === messengerListCurrentPage)
+          dispatchControlMessengerPaginationDataCount,
+          pageLoaded
+        )
+        setMessengerListPagination(
+          figure
         );
-        setMessengerListPagination(pagination);
-      } else if (
-        currentPage === "Dispatch Control" &&
-        dispatchControlMessengerData.length > 0 &&
-        searchPhrase !== "" &&
-        !isDispatchControlMessengerLoading &&
-        !isDeleteMessengerModalOpen
-      ) {
+      } else {
         const figure = chunkArrayForSearchPaginationDispatch(
           dispatchControlMessengerData,
-          encodeListPaginationDataCount,
+          dispatchControlMessengerPaginationDataCount,
           searchPhrase.toLowerCase()
         );
         setMessengerListSearchPagination(
           figure
         );
       }
-      if(isDeleteMessengerModalOpen) {
-        const figure = chunkArray(
-          dispatchControlMessengerData,
-          encodeListPaginationDataCount
-        );
-        setMessengerListPagination(
-          figure
-        );
-      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatchControlMessengerData, pageLoaded, messengerListCurrentPage]);
+  }, [dispatchControlMessengerData, pageLoaded, messengerListCurrentPage, isDispatchControlMessengerLoading]);
 
   useEffect(() => {
     if(dispatchControlMessengerData.length > 0 && dispatchControlCount > 0 && messengerListPagination.length > 0 && isDeleteMessengerModalOpen) {
@@ -129,7 +166,6 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
     }
     if(pageLoaded.length > 0 && messengerListPagination.length > 0) {
       if(pageLoaded.length > messengerListPagination.length) {
-        // console.log('bwakanangina')
         const messengerListPaginationArrLength = messengerListPagination.length-1;
         const pageLoadedNew = pageLoaded.map((res: number, index: number) => {
           return messengerListPaginationArrLength >= index ? res : undefined
@@ -146,6 +182,23 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
     }
   }, [dispatchControlMessengerData, messengerListPagination, dispatchControlCount])
 
+  useEffect(() => {
+    if(dispatchControlMessengerData.length > 0 && messengerListSearchPagination.length > 0 && isDeleteMessengerModalOpen) {
+      const searchPaginationData = dispatchControlMessengerData.map((messengerData: I_DispatchControlMessenger) => {
+        const name = messengerData.name.toLowerCase();
+        const address = messengerData.address.toLowerCase();
+        const preparedBy = messengerData.preparedBy.toLowerCase();
+        const result = name.includes(searchPhrase) || address.includes(searchPhrase) || preparedBy.includes(searchPhrase);
+        return result ? messengerData : null; 
+      }).filter((res: any) => res);
+      const searchPaginationNewCount = Math.ceil(searchPaginationData.length/dispatchControlMessengerPaginationDataCount)
+      if(messengerListSearchPagination.length > searchPaginationNewCount) {
+        const removedPages = messengerListSearchPagination.length - searchPaginationNewCount
+        setMessengerListSearchCurrentPage(messengerListSearchCurrentPage - removedPages)
+      }
+    }
+  }, [dispatchControlMessengerData, messengerListSearchPagination])
+
   const alterPagination = (
     isAddition: boolean,
     isLastPage: boolean,
@@ -159,20 +212,18 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
 
       const actualPageNumber = alterPageNumberBy;
       const isPageLoaded = pageLoaded.includes(actualPageNumber);
-      const toSkip = actualPageNumber * encodeListPaginationDataCount;
       if (!isPageLoaded) {
-        const urlVariables = `?limit=${encodeListPaginationDataCount}&skip=${toSkip}`;
+        const toSkip = dispatchControlCount - ((actualPageNumber+1) * dispatchControlMessengerPaginationDataCount);
+        const urlVariables = `?limit=${dispatchControlMessengerPaginationDataCount}&skip=${toSkip < 0 ? 0 : toSkip}`;
         getDispatchControlMessengers(urlVariables, actualPageNumber);
       }
     } else {
       setMessengerListCurrentPage(value);
       const isPageLoaded = pageLoaded.includes(value);
       if (!isPageLoaded) {
-        const remainder = dispatchControlCount % encodeListPaginationDataCount;
-        const toSkip = dispatchControlCount - remainder;
-        const limit =
-          remainder === 0 ? encodeListPaginationDataCount : remainder;
-        const urlVariables = `?limit=${limit}&skip=${toSkip}`;
+        const remainder = dispatchControlCount % dispatchControlMessengerPaginationDataCount;
+        const limit = remainder === 0 ? dispatchControlMessengerPaginationDataCount : remainder;
+        const urlVariables = `?limit=${limit}&skip=0`;
         getDispatchControlMessengers(urlVariables, value);
       }
     }
@@ -180,12 +231,13 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
 
   useEffect(() => {
     setMessengerListCurrentPage(0);
+
     if (
       dispatchControlMessengerData.length > 0 &&
       searchPhrase !== "" &&
       searchPhrase.length > 2
     ) {
-      const condition = `{"$or": [{"name": { "$regex": "${searchPhrase}" }}, {"address": { "$regex":"${searchPhrase}"}}, {"preparedBy": { "$regex":"${searchPhrase}"}}]}`;
+      const condition = `{"$or": [{"name": { "$regex": "${searchPhrase}", "$options": "i" }}, {"address": { "$regex": "${searchPhrase}", "$options": "i" }}, {"preparedBy": { "$regex": "${searchPhrase}", "$options": "i" }}]}`;
       const urlVariables = `?limit=0&condition=${encodeURIComponent(
         condition
       )}`;
@@ -199,19 +251,22 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
     // This variable is the query variables that is being pass to the api for condition
     if (
       currentPage === "Dispatch Control" &&
-      dispatchControlMessengerData.length === 0
+      dispatchControlMessengerData.length === 0 &&
+      dispatchControlCount > 0 &&
+      currentTab === "lists"
     ) {
-      const urlVariables = `?limit=${encodeListPaginationDataCount}`;
+      const toSkip = dispatchControlCount-dispatchControlMessengerPaginationDataCount;
+      const urlVariables = `?limit=${dispatchControlMessengerPaginationDataCount}&skip=${toSkip}`;
       const newPageNumber = 0;
       getDispatchControlMessengers(urlVariables, newPageNumber);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
+  }, [currentPage, dispatchControlCount]);
 
   useEffect(() => {
     if (dispatchControlCount > 0) {
       setMessengerListPaginationCount(
-        Math.ceil(dispatchControlCount / encodeListPaginationDataCount)
+        Math.ceil(dispatchControlCount / dispatchControlMessengerPaginationDataCount)
       );
     }
   }, [dispatchControlCount]);
@@ -224,8 +279,9 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
     date: string,
     index: number
   ) => {
-    const itemNumber =
-      messengerListCurrentPage * encodeListPaginationDataCount + (index + 1);
+    const itemNumber = searchPhrase === "" ?
+      messengerListCurrentPage * dispatchControlMessengerPaginationDataCount + (index + 1) : 
+        messengerListSearchCurrentPage * dispatchControlMessengerPaginationDataCount + (index + 1);
     return (
       <tr key={index}>
         <td>{itemNumber}</td>
@@ -235,9 +291,9 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
         <td>{moment(date).format("MMM D, YYYY")}</td>
         <td>
           <span className="BasicLink">View Record</span> |{" "}
-          <span className="BasicLink">Print Receipt</span> |{" "}
-          <span className="BasicLink">Print Proof</span> |{" "}
-          <span className="BasicLink">Edit</span> |{" "}
+          <span className="BasicLink" onClick={() => window.open(`/dispatchcontrolreceipt?messengerid=${id}`, "_blank")}>Print Receipt</span> |{" "}
+          <span className="BasicLink" onClick={() => window.open(`/dispatchcontrolproof?messengerid=${id}`, "_blank")}>Print Proof</span> |{" "}
+          <span className="BasicLink" onClick={() => editMessenger(id, messengerName, address, prepared, date)}>Edit</span> |{" "}
           <span className="BasicLink" onClick={() => deleteMessenger(id, messengerName)}>Delete</span>
         </td>
       </tr>
@@ -333,7 +389,6 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
       searchPhrase !== "" &&
       searchPhrase.length > 2
     ) {
-      console.log('complex', messengerListSearchPagination)
       return (
         <>
           <Table striped bordered hover>
@@ -397,12 +452,20 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
       return <Spinner animation="grow" />;
     } else if (
       !isDispatchControlMessengerLoading ||
-      messengerListPagination.length > 0 ||
-      !isDispatchControlMessengerLoading ||
       messengerListPagination.length > 0
     ) {
       return <h5 style={{ color: "gray" }}>No data found.</h5>;
     }
+  };
+
+  const editMessenger = (messengerId: string, messengerName: string, address: string, prepared: string, date: string) => {
+    triggerModalTopAlert(false, "", "");
+    setSelectedMessengerId(messengerId);
+    setSelectedMessengerName(messengerName);
+    setSelectedMessengerAddress(address);
+    setSelectedMessengerPrepared(prepared);
+    setSelectedMessengerDate(date);
+    setIsEditMessengerModalOpen(true);
   };
 
   const deleteMessenger = (messengerId: string, messengerName: string) => {
@@ -411,6 +474,7 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
     setSelectedMessengerName(messengerName);
     setIsDeleteMessengerModalOpen(true);
   };
+
 
   return (
     <>
@@ -423,6 +487,17 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
         />
       </Form.Group>
       {renderDispatchControlMessengerTable()}
+      <EditMessengerModal
+        selectedMessengerName={selectedMessengerName}
+        selectedMessengerId={selectedMessengerId}
+        selectedMessengerAddress={selectedMessengerAddress}
+        selectedMessengerPrepared={selectedMessengerPrepared}
+        selectedMessengerDate={selectedMessengerDate}
+        isEditMessengerModalOpen={isEditMessengerModalOpen}
+        setIsEditMessengerModalOpen={(res: boolean) =>
+          setIsEditMessengerModalOpen(res)
+        }
+      />
       <DeleteMessengerModal
         selectedMessengerName={selectedMessengerName}
         selectedMessengerId={selectedMessengerId}

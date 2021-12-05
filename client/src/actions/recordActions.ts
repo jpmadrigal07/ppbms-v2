@@ -8,7 +8,9 @@ import {
   UPDATE_RECORD,
   SECOND_MODAL_TOP_ALERT,
   DELETE_RECORD,
-  ADD_DASHBOARD_COUNT
+  ADD_DASHBOARD_COUNT,
+  UPDATE_LATEST_ENCODE_LIST_COUNT,
+  PROOF_RECORD_COUNTS,
 } from "./types";
 import _ from "lodash";
 
@@ -86,6 +88,10 @@ export const uploadExcelFile = (encodeListId: string, file: string, barcodeMiddl
         dispatch({
           type: ADD_RECORD,
           payload: res.data.dbRes,
+        });
+        dispatch({
+          type: UPDATE_LATEST_ENCODE_LIST_COUNT,
+          payload: res.data.dbRes.length,
         });
         dispatch({
           type: TOP_ALERT,
@@ -168,10 +174,10 @@ export const bulkDeleteRecord = (ids: string[]) => (dispatch: Function) => {
     .delete(`/api/record/bulk`, { data: ids })
     .then((res) => {
       if (res.data.isSuccess) {
-        dispatch({
-          type: DELETE_RECORD,
-          payload: res.data.dbRes,
-        });
+        // dispatch({
+        //   type: DELETE_RECORD,
+        //   payload: res.data.dbRes,
+        // });
       } else {
         dispatch(setRecordLoader("delete", false));
         dispatch({
@@ -190,7 +196,6 @@ export const bulkDeleteRecord = (ids: string[]) => (dispatch: Function) => {
 };
 
 export const deleteRecord = (id: string) => (dispatch: Function) => {
-  console.log('delete')
   dispatch(setRecordLoader("delete", true));
   axios
     .delete(`/api/record/${id}`)

@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
           $exists: false
       }
   }
-  
+
   try {
     const getAllDispatchControlMessenger = await DispatchControlMessenger.find(condition).skip(skip).limit(limit);
     res.json({
@@ -193,8 +193,8 @@ router.patch("/:id", async (req, res) => {
   const date = req.body.date;
   if (name) toUpdate.name = name;
   if (address) toUpdate.address = address;
-  if (preparedBy) toUpdate.prepared = preparedBy;
-  if (date) toUpdate.prepared = date;
+  if (preparedBy) toUpdate.preparedBy = preparedBy;
+  if (date) toUpdate.date = date;
   if (!_.isNil(name) || !_.isNil(address) || !_.isNil(preparedBy) || !_.isNil(date)) {
     try {
       const getDispatchControlMessenger = await DispatchControlMessenger.find({
@@ -210,7 +210,7 @@ router.patch("/:id", async (req, res) => {
         const updateDispatchControlMessenger = await DispatchControlMessenger.findByIdAndUpdate(req.params.id, {
           $set: toUpdate,
           updatedAt: Date.now(),
-        });
+        }, {new: true});
         res.json({
           dbRes: updateDispatchControlMessenger,
           isSuccess: true
