@@ -18,8 +18,9 @@ Actual Release:
 • Dispatch Control Print Receipt
 • Dispatch Control Print Proof
 • Search Pagination on Master List
+  - Including the converting of masterlist search input to date picker
 • Search Record count
 
 Added Release:
 
--
+• Fix dispatch control pagination

@@ -113,7 +113,8 @@ const MasterListView = (props: I_MasterListViewProps) => {
             encodeListPagination,
             pageLoaded.slice(-1).pop(),
             encodeListCurrentPage,
-            pageLoaded.findIndex((res: number) => res === encodeListCurrentPage)
+            pageLoaded.findIndex((res: number) => res === encodeListCurrentPage),
+            encodeListPaginationDataCount,
           );
           setEncodeListPagination(pagination);
         } else if (

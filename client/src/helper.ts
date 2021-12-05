@@ -1,5 +1,3 @@
-
-import { encodeListPaginationDataCount } from "./constant";
 import _ from "lodash";
 import { I_DispatchControlMessenger, I_EncodeList } from "./interfaces";
 import moment from "moment";
@@ -10,15 +8,16 @@ export const bigDataChunkArrayForPagination = (
   lastPageNumber: number | undefined,
   currentPageNumber: number,
   currentPageNumberIndex: number,
+  paginationDataCount: number,
 ) => {
   const currentPaginationCount = currentPaginationData.length;
   const lastPageNumberG = !_.isNil(lastPageNumber) ? lastPageNumber : 0;
   const toSkipM = currentPageNumberIndex > 1 ? currentPageNumberIndex : 1;
-  if (currentPaginationCount !== 0 || updatedData.length > encodeListPaginationDataCount ) {
+  if (currentPaginationCount !== 0 || updatedData.length > paginationDataCount ) {
     const toSkipData =
       currentPageNumber > lastPageNumberG
-        ? currentPaginationCount * encodeListPaginationDataCount - 1
-        : toSkipM * encodeListPaginationDataCount - 1;
+        ? currentPaginationCount * paginationDataCount - 1
+        : toSkipM * paginationDataCount - 1;
     const newData = [...currentPaginationData];
     newData.push({
       pageNumber: currentPageNumber,
@@ -26,7 +25,7 @@ export const bigDataChunkArrayForPagination = (
         .map((encodeList: any, i: number) => {
           if (i > toSkipData) {
             const limit = i - toSkipData;
-            if (limit <= encodeListPaginationDataCount) {
+            if (limit <= paginationDataCount) {
               return encodeList;
             }
           }
