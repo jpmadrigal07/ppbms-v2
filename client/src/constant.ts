@@ -21,4 +21,5 @@ export const defaultPageWhenLoggedIn = "Dashboard";
 export const defaultPageWhenLoggedOut = "Login";
 export const encodeListPaginationDataCount = 10;
 export const dispatchControlMessengerPaginationDataCount = 10;
+export const dispatchControlDataPaginationDataCount = 5;
 export const recordPaginationDataCount = 5;

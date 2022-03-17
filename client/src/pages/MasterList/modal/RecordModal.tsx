@@ -86,8 +86,6 @@ const RecordModal = (props: I_RecordModal) => {
     }
   }, [selectedRecordData, isRecordModalOpen]);
 
-  // HINDI PA AYOS ANG VIEW RECORD PAG OPEN AT CLOSE MO TYAKA PAG CHECK NG IBANG VIEW RECORD
-
   useEffect(() => {
     setRecordCurrentPage(0);
     searchPagination();

@@ -13,6 +13,7 @@ import { dispatchControlMessengerPaginationDataCount } from "../../../constant";
 import { getDashboardCount } from "../../../actions/dashboardCountActions";
 import DeleteMessengerModal from "../modal/DeleteMessengerModal";
 import EditMessengerModal from "../modal/EditMessengerModal";
+import MessengerRecordModal from "../modal/MessengerRecordModal";
 import {
   bigDataChunkArrayForPagination,
   chunkArrayForSearchPaginationDispatch,
@@ -59,6 +60,7 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
   const [selectedMessengerDate, setSelectedMessengerDate] = useState("");
   const [isDeleteMessengerModalOpen, setIsDeleteMessengerModalOpen] = useState(false);
   const [isEditMessengerModalOpen, setIsEditMessengerModalOpen] = useState(false);
+  const [isMessengerRecordModalOpen, setIsMessengerRecordModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isNil(gAuthData) && gAuthData !== "" && !isNil(gAuthData.role)) {
@@ -290,7 +292,9 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
         <td>{prepared}</td>
         <td>{moment(date).format("MMM D, YYYY")}</td>
         <td>
-          <span className="BasicLink">View Record</span> |{" "}
+          <span className="BasicLink" onClick={() =>
+              showMessengerRecordModal(id, messengerName, address, prepared, date)
+          }>View Record</span> |{" "}
           <span className="BasicLink" onClick={() => window.open(`/dispatchcontrolreceipt?messengerid=${id}`, "_blank")}>Print Receipt</span> |{" "}
           <span className="BasicLink" onClick={() => window.open(`/dispatchcontrolproof?messengerid=${id}`, "_blank")}>Print Proof</span> |{" "}
           <span className="BasicLink" onClick={() => editMessenger(id, messengerName, address, prepared, date)}>Edit</span> |{" "}
@@ -298,6 +302,22 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
         </td>
       </tr>
     );
+  };
+
+  const showMessengerRecordModal = (
+    messengerId: string,
+    messengerName: string,
+    address: string,
+    prepared: string,
+    date: string
+  ) => {
+    triggerModalTopAlert(false, "", "");
+    setSelectedMessengerId(messengerId);
+    setSelectedMessengerName(messengerName);
+    setSelectedMessengerAddress(address);
+    setSelectedMessengerPrepared(prepared);
+    setSelectedMessengerDate(date);
+    setIsMessengerRecordModalOpen(true);
   };
 
   const renderDispatchControlMessengerTable = () => {
@@ -487,6 +507,17 @@ const MessengerListView = (props: I_MessengerListViewProps) => {
         />
       </Form.Group>
       {renderDispatchControlMessengerTable()}
+      <MessengerRecordModal
+        isMessengerRecordModalOpen={isMessengerRecordModalOpen}
+        selectedMessengerName={selectedMessengerName}
+        selectedMessengerId={selectedMessengerId}
+        selectedMessengerAddress={selectedMessengerAddress}
+        selectedMessengerPrepared={selectedMessengerPrepared}
+        selectedMessengerDate={selectedMessengerDate}
+        setIsMessengerRecordModalOpen={(res: boolean) =>
+          setIsMessengerRecordModalOpen(res)
+        }
+      />
       <EditMessengerModal
         selectedMessengerName={selectedMessengerName}
         selectedMessengerId={selectedMessengerId}
